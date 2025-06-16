@@ -1,10 +1,10 @@
 {
-  "name": "next-shadcn-dashboard-starter",
+  "name": "swappr-admin",
   "version": "1.0.0",
   "private": true,
   "author": {
-    "name": "Kiran",
-    "url": "https://github.com/Kiranism"
+    "name": "swappr",
+    "url": "https://github.com/timmie20"
   },
   "scripts": {
     "dev": "next dev --turbopack",
