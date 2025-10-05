@@ -1,6 +1,7 @@
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { SignIn as ClerkSignInForm } from '@clerk/nextjs';
+import { SignIn as ClerkSignInForm, SignUp } from '@clerk/nextjs';
+
 import { GitHubLogoIcon } from '@radix-ui/react-icons';
 import { IconStar } from '@tabler/icons-react';
 import { Metadata } from 'next';
@@ -38,7 +39,7 @@ export default function SignInViewPage({ stars }: { stars: number }) {
           >
             <path d='M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3' />
           </svg>
-          Logo
+          SWAPPR
         </div>
         <div className='relative z-20 mt-auto'>
           <blockquote className='space-y-2'>
@@ -71,10 +72,12 @@ export default function SignInViewPage({ stars }: { stars: number }) {
               <span className='font-display font-medium'>{stars}</span>
             </div>
           </Link>
+
           <ClerkSignInForm
             initialValues={{
-              emailAddress: 'your_mail+clerk_test@example.com'
+              emailAddress: ''
             }}
+            forceRedirectUrl='/dashboard/overview'
           />
 
           <p className='text-muted-foreground px-8 text-center text-sm'>
