@@ -44,9 +44,12 @@ export default function SignInViewPage({ stars }: { stars: number }) {
         <div className='relative z-20 mt-auto'>
           <blockquote className='space-y-2'>
             <p className='text-lg'>
-              &ldquo;This starter template has saved me countless hours of work
-              and helped me deliver projects to my clients faster than ever
-              before.&rdquo;
+              Swappr platform aims to create a secure and transparent system for
+              buying and swapping phones by implementing a phone rating
+              calculator to accurately represent device conditions, addressing
+              prevalent fraud in the Nigerian market. The system will utilize
+              diagnostic tools, user verification, and AI-driven fraud
+              prevention.
             </p>
             <footer className='text-sm'>Random Dude</footer>
           </blockquote>

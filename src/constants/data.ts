@@ -1,4 +1,4 @@
-import { NavItem } from '@/types';
+import { InitialModelData, NavItem } from '@/types';
 
 export type Product = {
   photo_url: string;
@@ -29,6 +29,15 @@ export const navItems: NavItem[] = [
     isActive: false,
     items: [] // No child items
   },
+  {
+    title: 'Models',
+    url: '/dashboard/model',
+    icon: 'phone',
+    shortcut: ['md', 'md'],
+    isActive: false,
+    items: [] // No child items
+  },
+
   {
     title: 'Account',
     url: '#', // Placeholder as there is no direct link for the parent
@@ -111,3 +120,165 @@ export const recentSalesData: SaleUser[] = [
     initials: 'SD'
   }
 ];
+
+export const modelData: InitialModelData = {
+  name: 'Iphone 16 pro max',
+  brand: ' Apple Iphone',
+  base: 1000000,
+  description:
+    'Would you like me to show how to verify the Clerk token and read the user’s role on protected routes',
+
+  storageVariations: [
+    { capacity: 64, price: 1000000 },
+    { capacity: 128, price: 2000000 }
+  ],
+  valuationElements: [
+    {
+      id: 'q1',
+      slug: 'condition',
+      label: 'What is the condition of your phone?',
+      type: 'radio',
+      required: true,
+      options: [
+        {
+          label: 'Mint',
+          value: 'mint',
+          adjustmentType: 'deduction',
+          valuationAmount: 10000
+        },
+        { label: 'Good', value: 'good' },
+        { label: 'Fair', value: 'fair' },
+        { label: 'Bad', value: 'bad' }
+      ],
+      note: 'Mint means brand new that Hasn’t been used'
+    },
+    {
+      id: 'q2',
+      slug: 'connections',
+      label: "Is your phone's wireless and mobile data working fine?",
+      type: 'radio',
+      required: true,
+      options: [
+        { label: 'Yep, everything’s working', value: 'yes' },
+        { label: 'Nope, something’s not working', value: 'no' }
+      ]
+    },
+    {
+      id: 'q3',
+      slug: 'faulty-connections',
+      label: 'Select the wireless or cellular features that do NOT work',
+      type: 'select',
+      required: true,
+      dependsOn: {
+        id: 'q2',
+        value: 'no'
+      },
+      options: [
+        { label: 'Wi-Fi', value: 'wifi' },
+        { label: 'Mobile Service', value: 'mobile_service' },
+        { label: 'Bluetooth', value: 'bluetooth' },
+        {
+          label: 'Airdrop',
+          value: 'airdrop'
+        },
+        { label: 'Hotspot', value: 'hotspot' }
+      ],
+      note: "Airdrop will be Automatically selected if either wifi and/or bluetooth doesn't work"
+    },
+    {
+      id: 'q4',
+      slug: 'security-feature-faceid',
+      label: 'Does your phone Face ID work?',
+      type: 'radio',
+      required: true,
+      options: [
+        { label: 'Yes', value: 'yes' },
+        { label: 'No', value: 'no' },
+        { label: 'I use Touch ID', value: 'n/a' }
+      ]
+    },
+    {
+      id: 'q5',
+      slug: 'security-feature-touchid',
+      label: 'Does your Touch ID properly?',
+      type: 'radio',
+      required: true,
+      dependsOn: {
+        id: 'q3',
+        value: 'n/a'
+      },
+      options: [
+        { label: 'Yes', value: 'yes' },
+        { label: 'No', value: 'no' }
+      ]
+    },
+    {
+      id: 'q6',
+      label: "What's your battery health percentage?",
+      slug: 'battery-health',
+      type: 'range',
+      required: true,
+      note: 'Drag the range bar to your battery health percentage, any lower than 80 is Considered service'
+    },
+    {
+      id: 'q7',
+      label: 'Does your phone have the True Tone feature?',
+      slug: 'display',
+      type: 'radio',
+      required: false,
+      options: [
+        { label: 'Yes', value: 'yes' },
+        { label: 'No', value: 'no' },
+        { label: 'Not Available', value: 'n/a' }
+      ],
+      note: 'To check this, swipe down from the top-right of your iphone and hold on the brightness bar, you should see true tone at the bottom'
+    },
+    {
+      id: 'q8',
+      label: 'Does your phone show any of these warning messages?',
+      slug: 'warning-errors',
+      type: 'select',
+      required: false,
+      options: [
+        { label: 'Important Display Message (IDM)', value: 'idm' },
+        { label: 'Important Battery Message (IBM)', value: 'ibm' },
+        { label: "Nope, it doesn't", value: 'none' }
+      ],
+      note: 'Select all that applies'
+    },
+    {
+      id: 'q9',
+      label: 'Does Snapchat work on your phone?',
+      slug: 'apps',
+      type: 'radio',
+      required: true,
+      options: [
+        { label: 'Yes', value: 'yes' },
+        { label: 'No', value: 'no' }
+      ]
+    },
+    {
+      id: 'q10',
+      label: 'Which parts of your phone are faulty?',
+      slug: 'device-damages',
+      type: 'damages',
+      required: false,
+      options: [
+        {
+          label: 'Screen',
+          value: 'screen',
+          adjustmentType: 'addition',
+          valuationAmount: 3000
+        },
+        { label: 'Back Camera', value: 'back_camera' },
+        { label: 'Front Camera', value: 'front_camera' },
+        { label: 'Battery', value: 'battery' },
+        { label: 'Speakers', value: 'speakers' },
+        { label: 'Charging Port', value: 'charging_port' },
+        { label: 'Power button', value: 'power_button' },
+        { label: 'Action Button', value: 'action_button' }
+      ],
+      note: 'Select all the Faulty parts of your device'
+    }
+  ]
+};
