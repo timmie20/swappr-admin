@@ -52,6 +52,12 @@ export const navItems: NavItem[] = [
         shortcut: ['m', 'm']
       },
       {
+        title: 'Create ',
+        url: '/dashboard/create-account',
+        icon: 'userPlus',
+        shortcut: ['c', 'c']
+      },
+      {
         title: 'Login',
         shortcut: ['l', 'l'],
         url: '/',

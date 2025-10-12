@@ -23,7 +23,7 @@ import { Form } from '@/components/ui/form';
 
 const formSchema = z.object({
   name: z.string().min(2, {
-    message: 'Product name must be at least 2 characters.'
+    message: 'Model name must be at least 5 characters.'
   }),
   brand: z.string(),
   base: z.coerce.number(),

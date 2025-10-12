@@ -77,3 +77,11 @@ export type ValuationParameter = {
   adjustmentType: 'addition' | 'deduction';
   amount: number;
 };
+
+export type CreateAdminProps = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: 'admin' | 'superadmin' | '';
+  password: string;
+};
