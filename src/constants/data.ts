@@ -128,16 +128,11 @@ export const recentSalesData: SaleUser[] = [
 ];
 
 export const modelData: InitialModelData = {
-  name: 'Iphone 16 pro max',
-  brand: ' Apple Iphone',
-  base: 1000000,
-  description:
-    'Would you like me to show how to verify the Clerk token and read the user’s role on protected routes',
-
-  storageVariations: [
-    { capacity: 64, price: 1000000 },
-    { capacity: 128, price: 2000000 }
-  ],
+  name: '',
+  brand: ' ',
+  base: 0,
+  description: '',
+  storageVariations: [],
   valuationElements: [
     {
       id: 'q1',
@@ -148,9 +143,7 @@ export const modelData: InitialModelData = {
       options: [
         {
           label: 'Mint',
-          value: 'mint',
-          adjustmentType: 'deduction',
-          valuationAmount: 10000
+          value: 'mint'
         },
         { label: 'Good', value: 'good' },
         { label: 'Fair', value: 'fair' },
@@ -272,9 +265,7 @@ export const modelData: InitialModelData = {
       options: [
         {
           label: 'Screen',
-          value: 'screen',
-          adjustmentType: 'addition',
-          valuationAmount: 3000
+          value: 'screen'
         },
         { label: 'Back Camera', value: 'back_camera' },
         { label: 'Front Camera', value: 'front_camera' },

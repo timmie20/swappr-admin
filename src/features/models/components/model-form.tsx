@@ -68,17 +68,19 @@ export default function ModelForm({
       amount: Number(opt.valuationAmount)
     }));
 
+  const fallbackStorageFields = Array.from({ length: 2 }, () => ({
+    capacity: 64,
+    price: 0
+  }));
+
   const defaultValues: ModelFormValues = {
     name: initialData?.name || '',
     brand: initialData?.brand || '',
     base: initialData?.base || 0,
     description: initialData?.description || '',
-    storageVariations:
-      initialData?.storageVariations ||
-      Array.from({ length: 2 }, () => ({
-        capacity: 64,
-        price: 0
-      })),
+    storageVariations: initialData?.storageVariations?.length
+      ? initialData.storageVariations
+      : fallbackStorageFields,
     valuationParams: seededValuationParams
   };
 
