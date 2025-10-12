@@ -8,31 +8,18 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
-import { Product } from '@/constants/mock-api';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useFieldArray, useForm } from 'react-hook-form';
 import * as z from 'zod';
 import StorageVariationField from './storage-variation-field';
-import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { InitialModelData, Question } from '@/types';
+import { InitialModelData } from '@/types';
 import ValuationAssignment from './valuation-assisgnment';
+import { FormInput } from '@/components/forms/form-input';
+import { FormSelect } from '@/components/forms/form-select';
+import { FormTextarea } from '@/components/forms/form-textarea';
+import { Form } from '@/components/ui/form';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -131,126 +118,91 @@ export default function ModelForm({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
-            <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
-              <FormField
-                control={form.control}
-                name='name'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Model Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder='Enter product name' {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        <Form
+          form={form}
+          onSubmit={form.handleSubmit(onSubmit)}
+          className='space-y-8'
+        >
+          <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
+            <FormInput
+              control={form.control}
+              name='name'
+              label='Model Name'
+              placeholder='Enter model name'
+              required
+            />
 
-              <FormField
-                control={form.control}
-                name='brand'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Brand</FormLabel>
-                    <Select
-                      onValueChange={(value) => field.onChange(value)}
-                      // value={field.value}
-                      {...field}
-                    >
-                      <FormControl className='w-full'>
-                        <SelectTrigger>
-                          <SelectValue placeholder='Select brand' />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value='apple-iphone'>
-                          Apple Iphone
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormSelect
+              control={form.control}
+              name='brand'
+              label='Select Brand'
+              options={[{ label: 'Apple Iphone', value: 'apple-iphone' }]}
+              placeholder='Select brand'
+              className='w-full'
+              required
+            />
 
-              <FormField
-                control={form.control}
-                name='base'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Base Price</FormLabel>
-                    <FormControl>
-                      <Input
-                        type='number'
-                        step='1000'
-                        placeholder='Enter price'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormInput
+              control={form.control}
+              name='base'
+              label='Base Price'
+              placeholder='Enter price'
+              type='number'
+              step={1000}
+              required
+            />
 
-              <FormField
-                control={form.control}
-                name='description'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description (optional)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder='Enter product description'
-                        className='resize-none'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormTextarea
+              control={form.control}
+              name='description'
+              label='Description'
+              placeholder='Enter model description'
+              required
+              config={{
+                maxLength: 500,
+                showCharCount: true,
+                rows: 4
+              }}
+            />
+          </div>
+
+          <Separator />
+
+          {/* storage variations */}
+
+          <div className='space-y-4'>
+            <CardTitle>Storage Section</CardTitle>
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+              {fields.map((field, index) => (
+                <StorageVariationField
+                  key={field.id}
+                  index={index}
+                  form={form}
+                  onRemove={remove}
+                />
+              ))}
             </div>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => append({ capacity: 64, price: 0 })}
+            >
+              Add storage variation
+            </Button>
+          </div>
 
-            <Separator />
+          <Separator />
 
-            {/* storage variations */}
-
-            <div className='space-y-4'>
-              <CardTitle>Storage Section</CardTitle>
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                {fields.map((field, index) => (
-                  <StorageVariationField
-                    key={field.id}
-                    index={index}
-                    form={form}
-                    onRemove={remove}
-                  />
-                ))}
-              </div>
-              <Button
-                type='button'
-                variant='outline'
-                onClick={() => append({ capacity: 64, price: 0 })}
-              >
-                Add storage variation
-              </Button>
+          <div className='space-y-4'>
+            <CardTitle>Valuation Parameters</CardTitle>
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
+              {initialData?.valuationElements?.map((q) => (
+                <ValuationAssignment key={q.id} question={q} form={form} />
+              ))}
             </div>
+          </div>
 
-            <Separator />
-
-            <div className='space-y-4'>
-              <CardTitle>Valuation Parameters</CardTitle>
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
-                {initialData?.valuationElements?.map((q) => (
-                  <ValuationAssignment key={q.id} question={q} form={form} />
-                ))}
-              </div>
-            </div>
-
-            <Button type='submit'>Add Product</Button>
-          </form>
+          <Button type='submit'>Add Product</Button>
         </Form>
       </CardContent>
     </Card>
