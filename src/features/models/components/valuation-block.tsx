@@ -55,7 +55,6 @@ export default function ValuationBlock({
           onChange={(e) =>
             onUpdate(option.value, 'amount', parseFloat(e.target.value) || 0)
           }
-          required
         />
       </div>
     </div>
