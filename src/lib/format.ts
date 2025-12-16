@@ -15,3 +15,30 @@ export function formatDate(
     return '';
   }
 }
+
+/**
+ * Format storage capacity to human-readable format
+ * @param capacity - Storage capacity in GB (number or string)
+ * @returns Formatted string (e.g., "64GB", "1TB", "2TB")
+ */
+export function formatStorageCapacity(
+  capacity: number | string | undefined
+): string {
+  if (!capacity) return '';
+
+  const numericCapacity =
+    typeof capacity === 'string' ? parseFloat(capacity) : capacity;
+
+  if (isNaN(numericCapacity)) return '';
+
+  // Convert to TB if >= 1000 GB
+  if (numericCapacity >= 1000) {
+    const tb = numericCapacity / 1024;
+    // Format to 1 decimal place if not a whole number
+    const formatted = tb % 1 === 0 ? tb.toFixed(0) : tb.toFixed(1);
+    return `${formatted}TB`;
+  }
+
+  // Otherwise show in GB
+  return `${numericCapacity}GB`;
+}

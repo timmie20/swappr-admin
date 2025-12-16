@@ -11,7 +11,6 @@ export default function ModelViewPage({ modelId }: TModelViewPageProps) {
   let pageTitle = 'Create New Phone Model and Valuation parameters';
 
   if (modelId !== 'new') {
-    //model fetching logic goes here
     notFound();
   }
   return <ModelForm pageTitle={pageTitle} initialData={modelData} />;

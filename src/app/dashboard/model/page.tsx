@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { IconPlus } from '@tabler/icons-react';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
+import ModelsListingPage from '@/features/models/components/models-listing';
 
 export const metadata = {
   title: 'Dashboard: Models'
@@ -27,6 +28,7 @@ export default function page() {
           </Link>
         </div>
         <Separator />
+        <ModelsListingPage />
       </div>
     </PageContainer>
   );
