@@ -1,6 +1,6 @@
 export interface Brand {
   id: string;
-  name: string;
+  brand_name: string;
   description?: string;
   logo?: string;
   createdAt: string;
@@ -24,7 +24,7 @@ export interface BrandFilters {
 }
 
 export interface BrandsResponse {
-  data: Brand[];
+  brands: Brand[];
   total: number;
   page: number;
   limit: number;

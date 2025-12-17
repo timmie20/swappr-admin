@@ -13,3 +13,16 @@ export function useModels(filters?: DefaultFilters) {
     enabled: !!getToken
   });
 }
+
+/**
+ * Hook to fetch a single model by ID
+ */
+export function useModel(id: string) {
+  const { getToken } = useAuth();
+
+  return useQuery({
+    queryKey: queryKeys.models.detail(id),
+    queryFn: () => modelsApi.getById(id, getToken),
+    enabled: !!getToken && !!id
+  });
+}

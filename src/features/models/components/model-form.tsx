@@ -11,77 +11,86 @@ import {
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useFieldArray, useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 import * as z from 'zod';
 import StorageVariationField from './storage-variation-field';
 import { Separator } from '@/components/ui/separator';
 import { InitialModelData } from '@/types';
-import ValuationAssignment from './valuation-assisgnment';
+// import ValuationAssignment from './valuation-assisgnment';
 import { FormInput } from '@/components/forms/form-input';
 import { FormSelect } from '@/components/forms/form-select';
 import { FormTextarea } from '@/components/forms/form-textarea';
 import { Form } from '@/components/ui/form';
+import { Brand } from '@/features/brands';
+import { useCreateModel } from '../hooks/use-create-model';
+import { useUpdateModel } from '../hooks/use-update-model';
+import { CreateModelDto } from '../types/models.types';
+import { Icons } from '@/components/icons';
 
 const formSchema = z.object({
   name: z.string().min(2, {
     message: 'Model name must be at least 5 characters.'
   }),
   brand: z.string(),
-  base: z.coerce.number(),
   description: z.string().optional(),
-  storageVariations: z
+  variations: z
     .array(
       z.object({
-        capacity: z.coerce.number().int().positive(),
+        storage_capacity: z.coerce.number().int().positive(),
         price: z.coerce.number().positive()
       })
     )
-    .min(1, { message: 'Add at least one storage variation.' }),
-  valuationParams: z.array(
-    z.object({
-      questionId: z.string(),
-      optionValue: z.string(),
-      adjustmentType: z.enum(['addition', 'deduction']),
-      amount: z.coerce.number().min(0)
-    })
-  )
+    .min(1, { message: 'Add at least one storage variation.' })
+  // valuationParams: z.array(
+  //   z.object({
+  //     questionId: z.string(),
+  //     optionValue: z.string(),
+  //     adjustmentType: z.enum(['addition', 'deduction']),
+  //     amount: z.coerce.number().min(0)
+  //   })
+  // )
 });
 
 export type ModelFormValues = z.infer<typeof formSchema>;
 
 export default function ModelForm({
   initialData,
-  pageTitle
+  pageTitle,
+  brands
 }: {
   initialData?: InitialModelData | null;
   pageTitle: string;
+  brands: Brand[];
 }) {
-  const seededValuationParams = (initialData?.valuationElements || [])
-    .flatMap((q) => (q.options || []).map((opt) => ({ q, opt })))
-    .filter(
-      ({ opt }) =>
-        typeof opt.valuationAmount === 'number' && !!opt.adjustmentType
-    )
-    .map(({ q, opt }) => ({
-      questionId: q.id,
-      optionValue: opt.value,
-      adjustmentType: opt.adjustmentType as 'addition' | 'deduction',
-      amount: Number(opt.valuationAmount)
-    }));
+  // const seededValuationParams = (initialData?.valuationElements || [])
+  //   .flatMap((q) => (q.options || []).map((opt) => ({ q, opt })))
+  //   .filter(
+  //     ({ opt }) =>
+  //       typeof opt.valuationAmount === 'number' && !!opt.adjustmentType
+  //   )
+  //   .map(({ q, opt }) => ({
+  //     questionId: q.id,
+  //     optionValue: opt.value,
+  //     adjustmentType: opt.adjustmentType as 'addition' | 'deduction',
+  //     amount: Number(opt.valuationAmount)
+  //   }));
 
   const fallbackStorageFields = Array.from({ length: 2 }, () => ({
-    capacity: 64,
+    storage_capacity: 64,
     price: 0
   }));
 
   const defaultValues: ModelFormValues = {
-    name: initialData?.name || '',
-    brand: initialData?.brand || '',
-    base: initialData?.base || 0,
-    description: initialData?.description || '',
-    storageVariations: initialData?.storageVariations?.length
-      ? initialData.storageVariations
-      : fallbackStorageFields,
-    valuationParams: seededValuationParams
+    name: initialData?.model_name || '',
+    brand: initialData?.brand?.id || '',
+    description: initialData?.desc || '',
+    variations: initialData?.variations?.length
+      ? initialData.variations.map((v) => ({
+          storage_capacity: Number(v.storage_capacity),
+          price: v.price || 0
+        }))
+      : fallbackStorageFields
+    // valuationParams: seededValuationParams
   };
 
   const form = useForm<ModelFormValues>({
@@ -91,15 +100,45 @@ export default function ModelForm({
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: 'storageVariations'
+    name: 'variations'
   });
 
-  function onSubmit(values: ModelFormValues) {
-    // handle submit
-    // void Promise.resolve(values);
+  const router = useRouter();
 
-    // eslint-disable-next-line no-console
-    console.log(values);
+  const createModel = useCreateModel();
+  const updateModel = useUpdateModel();
+
+  const isEditMode = !!initialData?.id;
+
+  const formatForPayload = (values: ModelFormValues): CreateModelDto => {
+    return {
+      brand_id: values.brand,
+      model_name: values.name,
+      desc: values.description || '',
+      variations: values.variations
+    };
+  };
+
+  function onSubmit(values: ModelFormValues) {
+    const payload = formatForPayload(values);
+
+    if (isEditMode) {
+      updateModel.mutate(
+        { id: initialData.id, payload },
+        {
+          onSuccess: () => {
+            router.push('/dashboard/model');
+          }
+        }
+      );
+      console.log(payload);
+    } else {
+      createModel.mutate(payload, {
+        onSuccess: () => {
+          router.push('/dashboard/model');
+        }
+      });
+    }
   }
 
   return (
@@ -138,19 +177,12 @@ export default function ModelForm({
               control={form.control}
               name='brand'
               label='Select Brand'
-              options={[{ label: 'Apple Iphone', value: 'apple-iphone' }]}
+              options={brands.map((brand) => ({
+                value: brand.id,
+                label: brand.brand_name
+              }))}
               placeholder='Select brand'
               className='w-full'
-              required
-            />
-
-            <FormInput
-              control={form.control}
-              name='base'
-              label='Base Price'
-              placeholder='Enter price'
-              type='number'
-              step={1000}
               required
             />
 
@@ -187,7 +219,7 @@ export default function ModelForm({
             <Button
               type='button'
               variant='outline'
-              onClick={() => append({ capacity: 64, price: 0 })}
+              onClick={() => append({ storage_capacity: 64, price: 0 })}
             >
               Add storage variation
             </Button>
@@ -195,16 +227,30 @@ export default function ModelForm({
 
           <Separator />
 
-          <div className='space-y-4'>
+          {/* <div className='space-y-4'>
             <CardTitle>Valuation Parameters</CardTitle>
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
               {initialData?.valuationElements?.map((q) => (
-                <ValuationAssignment key={q.id} question={q} form={form} />
+                <ValuationAssignment key={q} question={q} form={form} />
               ))}
             </div>
-          </div>
+          </div> */}
 
-          <Button type='submit'>Add Product</Button>
+          <Button
+            type='submit'
+            disabled={createModel.isPending || updateModel.isPending}
+          >
+            {(createModel.isPending || updateModel.isPending) && (
+              <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />
+            )}
+            {isEditMode
+              ? updateModel.isPending
+                ? 'Updating...'
+                : 'Update Model'
+              : createModel.isPending
+                ? 'Creating...'
+                : 'Create Model'}
+          </Button>
         </Form>
       </CardContent>
     </Card>

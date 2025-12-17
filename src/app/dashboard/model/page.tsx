@@ -6,6 +6,8 @@ import { IconPlus } from '@tabler/icons-react';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 import ModelsListingPage from '@/features/models/components/models-listing';
+import { Suspense } from 'react';
+import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
 
 export const metadata = {
   title: 'Dashboard: Models'
@@ -28,7 +30,9 @@ export default function page() {
           </Link>
         </div>
         <Separator />
-        <ModelsListingPage />
+        <Suspense fallback={<DataTableSkeleton columnCount={5} rowCount={5} />}>
+          <ModelsListingPage />
+        </Suspense>
       </div>
     </PageContainer>
   );

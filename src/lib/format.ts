@@ -42,3 +42,19 @@ export function formatStorageCapacity(
   // Otherwise show in GB
   return `${numericCapacity}GB`;
 }
+
+export function formatNaira(amount: number | string | undefined): string {
+  if (amount === undefined || amount === null) return '₦0.00';
+
+  const numericAmount =
+    typeof amount === 'string' ? parseFloat(amount) : amount;
+
+  if (isNaN(numericAmount)) return '₦0.00';
+
+  return new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency: 'NGN',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(numericAmount);
+}

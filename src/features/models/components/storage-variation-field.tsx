@@ -18,7 +18,7 @@ export default function StorageVariationField({
     <div className='flex w-full items-end gap-x-4 rounded-sm border-[1px] p-3'>
       <FormInput
         control={form.control}
-        name={`storageVariations.${index}.capacity`}
+        name={`variations.${index}.storage_capacity`}
         label='Capacity (GB)'
         type='number'
         step='1'
@@ -28,10 +28,9 @@ export default function StorageVariationField({
       />
       <FormInput
         control={form.control}
-        name={`storageVariations.${index}.price`}
+        name={`variations.${index}.price`}
         label='Price'
         type='number'
-        step='1000'
         placeholder='Enter price for this capacity'
         className='flex-1/2'
         required

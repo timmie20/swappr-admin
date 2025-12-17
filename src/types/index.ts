@@ -1,4 +1,6 @@
 import { Icons } from '@/components/icons';
+import { Brand } from '@/features/brands';
+import { Model } from '@/features/models/types/models.types';
 
 export interface NavItem {
   title: string;
@@ -62,14 +64,7 @@ export type StorageVariation = {
   price: number;
 };
 
-export type InitialModelData = {
-  name: string;
-  brand: string;
-  base: number;
-  description?: string;
-  storageVariations: StorageVariation[];
-  valuationElements: Question[];
-};
+export interface InitialModelData extends Model {}
 
 export type ValuationParameter = {
   questionId: string;

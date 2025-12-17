@@ -13,8 +13,11 @@ export interface Model {
 
 export interface Variation {
   id: string;
-  storage_capacity: string;
+  storage_capacity: number;
   price?: number;
+  note?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ModelsResponse {
@@ -32,3 +35,15 @@ export interface ModelFilters {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
+
+export type CreateModelDto = {
+  brand_id: string;
+  model_name: string;
+  desc: string;
+  variations: {
+    storage_capacity: number;
+    price: number;
+  }[];
+};
+
+export type UpdateModelDto = Partial<CreateModelDto>;
