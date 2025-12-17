@@ -29,7 +29,6 @@ const getModelbyId = async (id: string) => {
 
 export default async function ModelViewPage({ modelId }: TModelViewPageProps) {
   const brands = (await getBrands()).brands;
-  const model = (await getModelbyId(modelId)).model;
 
   // Create new model
   if (modelId === 'new') {
@@ -41,6 +40,7 @@ export default async function ModelViewPage({ modelId }: TModelViewPageProps) {
     );
   }
 
+  const model = (await getModelbyId(modelId)).model;
   // Edit existing model
   if (!model) {
     notFound();
