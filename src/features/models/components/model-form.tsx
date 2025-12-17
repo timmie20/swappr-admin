@@ -15,15 +15,12 @@ import { useRouter } from 'next/navigation';
 import * as z from 'zod';
 import StorageVariationField from './storage-variation-field';
 import { Separator } from '@/components/ui/separator';
-import { InitialModelData } from '@/types';
-// import ValuationAssignment from './valuation-assisgnment';
 import { FormInput } from '@/components/forms/form-input';
 import { FormSelect } from '@/components/forms/form-select';
 import { FormTextarea } from '@/components/forms/form-textarea';
 import { Form } from '@/components/ui/form';
 import { Brand } from '@/features/brands';
 import { useCreateModel } from '../hooks/use-create-model';
-import { useUpdateModel } from '../hooks/use-update-model';
 import { CreateModelDto } from '../types/models.types';
 import { Icons } from '@/components/icons';
 
@@ -54,11 +51,9 @@ const formSchema = z.object({
 export type ModelFormValues = z.infer<typeof formSchema>;
 
 export default function ModelForm({
-  initialData,
   pageTitle,
   brands
 }: {
-  initialData?: InitialModelData | null;
   pageTitle: string;
   brands: Brand[];
 }) {
@@ -81,16 +76,10 @@ export default function ModelForm({
   }));
 
   const defaultValues: ModelFormValues = {
-    name: initialData?.model_name || '',
-    brand: initialData?.brand?.id || '',
-    description: initialData?.desc || '',
-    variations: initialData?.variations?.length
-      ? initialData.variations.map((v) => ({
-          storage_capacity: Number(v.storage_capacity),
-          price: v.price || 0
-        }))
-      : fallbackStorageFields
-    // valuationParams: seededValuationParams
+    name: '',
+    brand: '',
+    description: '',
+    variations: fallbackStorageFields
   };
 
   const form = useForm<ModelFormValues>({
@@ -104,11 +93,7 @@ export default function ModelForm({
   });
 
   const router = useRouter();
-
   const createModel = useCreateModel();
-  const updateModel = useUpdateModel();
-
-  const isEditMode = !!initialData?.id;
 
   const formatForPayload = (values: ModelFormValues): CreateModelDto => {
     return {
@@ -121,24 +106,11 @@ export default function ModelForm({
 
   function onSubmit(values: ModelFormValues) {
     const payload = formatForPayload(values);
-
-    if (isEditMode) {
-      updateModel.mutate(
-        { id: initialData.id, payload },
-        {
-          onSuccess: () => {
-            router.push('/dashboard/model');
-          }
-        }
-      );
-      console.log(payload);
-    } else {
-      createModel.mutate(payload, {
-        onSuccess: () => {
-          router.push('/dashboard/model');
-        }
-      });
-    }
+    createModel.mutate(payload, {
+      onSuccess: () => {
+        router.push('/dashboard/model');
+      }
+    });
   }
 
   return (
@@ -236,20 +208,11 @@ export default function ModelForm({
             </div>
           </div> */}
 
-          <Button
-            type='submit'
-            disabled={createModel.isPending || updateModel.isPending}
-          >
-            {(createModel.isPending || updateModel.isPending) && (
+          <Button type='submit' disabled={createModel.isPending}>
+            {createModel.isPending && (
               <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />
             )}
-            {isEditMode
-              ? updateModel.isPending
-                ? 'Updating...'
-                : 'Update Model'
-              : createModel.isPending
-                ? 'Creating...'
-                : 'Create Model'}
+            {createModel.isPending ? 'Creating...' : 'Create Model'}
           </Button>
         </Form>
       </CardContent>

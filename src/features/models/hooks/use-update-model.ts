@@ -27,41 +27,16 @@ export function useUpdateModel() {
     mutationFn: ({ id, payload }: { id: string; payload: UpdateModelDto }) =>
       modelsApi.update(id, payload, getToken),
 
-    onMutate: async ({ id, payload }) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: queryKeys.models.detail(id)
-      });
-
-      // Snapshot previous value
-      const previousModel = queryClient.getQueryData(
-        queryKeys.models.detail(id)
-      );
-
-      // Optimistically update
-      queryClient.setQueryData(queryKeys.models.detail(id), (old: any) => ({
-        ...old,
-        ...payload
-      }));
-
-      return { previousModel };
-    },
-
-    onError: (error: any, { id }, context) => {
-      // Rollback on error
-      queryClient.setQueryData(
-        queryKeys.models.detail(id),
-        context?.previousModel
-      );
-
+    onError: (error: any) => {
       const message =
         error?.response?.data?.message || 'Failed to update model';
       toast.error(message);
     },
 
     onSuccess: (data, { id }) => {
-      // Update cache with server response
+      // Update cache with fresh server response
       queryClient.setQueryData(queryKeys.models.detail(id), data);
+      // Invalidate list to keep it in sync
       queryClient.invalidateQueries({ queryKey: queryKeys.models.lists() });
       toast.success('Model updated successfully');
     }

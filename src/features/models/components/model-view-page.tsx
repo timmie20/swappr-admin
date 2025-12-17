@@ -36,7 +36,6 @@ export default async function ModelViewPage({ modelId }: TModelViewPageProps) {
     return (
       <ModelForm
         pageTitle='Create New Phone Model and variations'
-        initialData={null}
         brands={brands}
       />
     );

@@ -65,14 +65,14 @@ export const modelsApi = {
     getToken: () => Promise<string | null>
   ): Promise<Model> => {
     const headers = await getClientAuthHeaders(getToken);
-    const { data } = await apiClient.patch<Model>(
+    const { data } = await apiClient.patch<{ model: Model }>(
       `/models/${id}/update`,
       payload,
       {
         headers
       }
     );
-    return data;
+    return data.model;
   },
 
   /**

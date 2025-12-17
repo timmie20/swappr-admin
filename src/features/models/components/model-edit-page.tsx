@@ -42,10 +42,10 @@ export default function ModelEditPage({ model, brands }: ModelEditPageProps) {
 
   const form = useForm<EditModelFormValues>({
     resolver: zodResolver(editModelSchema),
-    defaultValues: {
-      model_name: model.model_name,
-      brand_id: model.brand?.id || '',
-      desc: model.desc || ''
+    values: {
+      model_name: liveModel?.model_name || '',
+      brand_id: liveModel?.brand?.id || '',
+      desc: liveModel?.desc || ''
     }
   });
 
@@ -68,9 +68,9 @@ export default function ModelEditPage({ model, brands }: ModelEditPageProps) {
 
   function onSubmit(values: EditModelFormValues) {
     const initialValues: EditModelFormValues = {
-      model_name: model.model_name,
-      brand_id: model.brand?.id || '',
-      desc: model.desc || ''
+      model_name: liveModel?.model_name || '',
+      brand_id: liveModel?.brand?.id || '',
+      desc: liveModel?.desc || ''
     };
 
     const payload = getChangedFields(initialValues, values);
