@@ -38,7 +38,7 @@ interface ModelEditPageProps {
 
 export default function ModelEditPage({ model, brands }: ModelEditPageProps) {
   const updateModel = useUpdateModel();
-  const { data: liveModel } = useModel(model.id);
+  const { data: liveModel } = useModel(model.id, model);
 
   const form = useForm<EditModelFormValues>({
     resolver: zodResolver(editModelSchema),

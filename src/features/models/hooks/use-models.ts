@@ -17,12 +17,13 @@ export function useModels(filters?: DefaultFilters) {
 /**
  * Hook to fetch a single model by ID
  */
-export function useModel(id: string) {
+export function useModel(id: string, initialData?: any) {
   const { getToken } = useAuth();
 
   return useQuery({
     queryKey: queryKeys.models.detail(id),
     queryFn: () => modelsApi.getById(id, getToken),
+    initialData,
     enabled: !!getToken && !!id
   });
 }
