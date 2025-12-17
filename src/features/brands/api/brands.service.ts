@@ -4,8 +4,7 @@ import {
   Brand,
   BrandFilters,
   BrandsResponse,
-  CreateBrandDto,
-  UpdateBrandDto
+  CreateBrandDto
 } from '../types/brand.types';
 
 /**
@@ -59,13 +58,17 @@ export const brandsApi = {
    */
   update: async (
     id: string,
-    payload: UpdateBrandDto,
+    payload: CreateBrandDto,
     getToken: () => Promise<string | null>
   ): Promise<Brand> => {
     const headers = await getClientAuthHeaders(getToken);
-    const { data } = await apiClient.patch<Brand>(`/brands/${id}`, payload, {
-      headers
-    });
+    const { data } = await apiClient.patch<Brand>(
+      `/brands/${id}/update`,
+      payload,
+      {
+        headers
+      }
+    );
     return data;
   },
 
@@ -77,6 +80,6 @@ export const brandsApi = {
     getToken: () => Promise<string | null>
   ): Promise<void> => {
     const headers = await getClientAuthHeaders(getToken);
-    await apiClient.delete(`/brands/${id}`, { headers });
+    await apiClient.delete(`/brands/${id}/remove`, { headers });
   }
 };

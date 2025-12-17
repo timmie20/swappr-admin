@@ -2,33 +2,15 @@ import { notFound } from 'next/navigation';
 import React from 'react';
 import ModelForm from './model-form';
 import ModelEditPage from './model-edit-page';
-import { getAuthHeaders } from '@/lib/auth-headers.server';
-import apiClient from '@/lib/api-client';
-import { BrandsResponse } from '@/features/brands';
-import { Model } from '../types/models.types';
+import { modelsApiServer } from '../api/models.service.server';
+import { brandApiServer } from '@/features/brands/api/brands.service.server';
 
 type TModelViewPageProps = {
   modelId: string;
 };
 
-const getBrands = async () => {
-  const auth = await getAuthHeaders();
-  const { data } = await apiClient.get<BrandsResponse>('/brands', {
-    headers: auth
-  });
-  return data;
-};
-
-const getModelbyId = async (id: string) => {
-  const auth = await getAuthHeaders();
-  const { data } = await apiClient.get<{ model: Model }>(`/models/${id}`, {
-    headers: auth
-  });
-  return data;
-};
-
 export default async function ModelViewPage({ modelId }: TModelViewPageProps) {
-  const brands = (await getBrands()).brands;
+  const brands = (await brandApiServer.getAll()).brands;
 
   // Create new model
   if (modelId === 'new') {
@@ -40,7 +22,7 @@ export default async function ModelViewPage({ modelId }: TModelViewPageProps) {
     );
   }
 
-  const model = (await getModelbyId(modelId)).model;
+  const model = (await modelsApiServer.getModelbyId(modelId)).model;
   // Edit existing model
   if (!model) {
     notFound();

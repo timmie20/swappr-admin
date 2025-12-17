@@ -1,6 +1,7 @@
 import PageContainer from '@/components/layout/page-container';
+import ModelEditSkeleton from '@/components/skeletons/model-edit-skeleton';
 import ModelViewPage from '@/features/models/components/model-view-page';
-import React from 'react';
+import React, { Suspense } from 'react';
 
 export const metadata = {
   title: 'Dashboard: Model View'
@@ -13,7 +14,9 @@ export default async function page(props: PageProps) {
   return (
     <PageContainer scrollable>
       <div className='flex-1 space-y-4'>
-        <ModelViewPage modelId={params.modelId} />
+        <Suspense fallback={<ModelEditSkeleton />}>
+          <ModelViewPage modelId={params.modelId} />
+        </Suspense>
       </div>
     </PageContainer>
   );

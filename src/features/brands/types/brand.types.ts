@@ -3,17 +3,13 @@ export interface Brand {
   brand_name: string;
   description?: string;
   logo?: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface CreateBrandDto {
-  name: string;
-  description?: string;
-  logo?: string;
+  brand_name: string;
 }
-
-export interface UpdateBrandDto extends Partial<CreateBrandDto> {}
 
 export interface BrandFilters {
   search?: string;
