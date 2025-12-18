@@ -74,9 +74,9 @@ export type ValuationParameter = {
 };
 
 export type CreateAdminProps = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: 'admin' | 'superadmin' | '';
+  first_name: string;
+  last_name: string;
+  email_address: string;
+  role: string;
   password: string;
 };

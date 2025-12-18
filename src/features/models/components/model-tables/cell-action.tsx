@@ -12,25 +12,33 @@ import { IconEdit, IconDotsVertical, IconTrash } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Model } from '../../types/models.types';
+import { useDeleteModel } from '../../hooks/use-delete-model';
 
 interface CellActionProps {
   data: Model;
 }
 
 export const CellAction: React.FC<CellActionProps> = ({ data }) => {
-  const [loading] = useState(false);
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  const onConfirm = async () => {};
+  const deleteModel = useDeleteModel();
+
+  const handleDelete = () => {
+    deleteModel.mutate(data.id, {
+      onSuccess: () => {
+        setOpen(false);
+      }
+    });
+  };
 
   return (
     <>
       <AlertModal
         isOpen={open}
         onClose={() => setOpen(false)}
-        onConfirm={onConfirm}
-        loading={loading}
+        onConfirm={handleDelete}
+        loading={deleteModel.isPending}
       />
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>

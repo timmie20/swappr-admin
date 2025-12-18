@@ -60,8 +60,6 @@ export default function ModelVariationsTable({
     );
   };
 
-  console.log(variations);
-
   return (
     <>
       <Card>

@@ -76,6 +76,19 @@ export const modelsApi = {
   },
 
   /**
+   * Delete a variation
+   */
+  deleteModel: async (
+    modelId: string,
+    getToken: () => Promise<string | null>
+  ) => {
+    const headers = await getClientAuthHeaders(getToken);
+    await apiClient.delete(`models/${modelId}/remove`, {
+      headers
+    });
+  },
+
+  /**
    * Create a new variation for a model
    */
   createVariation: async (

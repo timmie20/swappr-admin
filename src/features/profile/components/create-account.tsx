@@ -8,16 +8,18 @@ import { CreateAdminProps } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { useCreateAccount } from '../hook/use-create-account';
+import { Icons } from '@/components/icons';
 
 const formSchema = z.object({
-  firstName: z.string().min(3, {
+  first_name: z.string().min(3, {
     message: 'Firstname must be at least 3 characters.'
   }),
-  lastName: z.string().min(3, {
+  last_name: z.string().min(3, {
     message: 'Lastname must be at least 3 characters.'
   }),
   role: z.string(),
-  email: z
+  email_address: z
     .string()
     .min(1, 'Email is required')
     .email('Please enter a valid email address'),
@@ -35,10 +37,11 @@ const formSchema = z.object({
 });
 
 export default function CreateAccount() {
+  const createAdmin = useCreateAccount();
   const defaultValues: CreateAdminProps = {
-    firstName: '',
-    lastName: '',
-    email: '',
+    first_name: '',
+    last_name: '',
+    email_address: '',
     role: '',
     password: ''
   };
@@ -49,7 +52,11 @@ export default function CreateAccount() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    createAdmin.mutate(values, {
+      onSuccess: () => {
+        form.reset();
+      }
+    });
   }
   return (
     <Card className='max-w-lg'>
@@ -67,21 +74,21 @@ export default function CreateAccount() {
         >
           <FormInput
             control={form.control}
-            name='firstName'
+            name='first_name'
             label='First Name'
             placeholder='Enter first name'
             required
           />
           <FormInput
             control={form.control}
-            name='lastName'
+            name='last_name'
             label='Last Name'
             placeholder='Enter last name'
             required
           />
           <FormInput
             control={form.control}
-            name='email'
+            name='email_address'
             label='Email address'
             placeholder='Enter a valid email address'
             type='email'
@@ -108,7 +115,12 @@ export default function CreateAccount() {
             required
           />
 
-          <Button type='submit'>Create Account</Button>
+          <Button type='submit' disabled={createAdmin.isPending}>
+            {createAdmin.isPending && (
+              <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />
+            )}
+            {createAdmin.isPending ? 'Please wait' : 'Create Account'}
+          </Button>
         </Form>
       </CardContent>
     </Card>
