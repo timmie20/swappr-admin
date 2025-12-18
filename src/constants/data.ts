@@ -45,6 +45,14 @@ export const navItems: NavItem[] = [
     isActive: false,
     items: [] // No child items
   },
+  {
+    title: 'Questions',
+    url: '/dashboard/question',
+    icon: 'question',
+    shortcut: ['q', 'q'],
+    isActive: false,
+    items: [] // No child items
+  },
 
   {
     title: 'Account',

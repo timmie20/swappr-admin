@@ -2,7 +2,6 @@
 export type {
   Brand,
   CreateBrandDto,
-  UpdateBrandDto,
   BrandFilters,
   BrandsResponse
 } from './types/brand.types';

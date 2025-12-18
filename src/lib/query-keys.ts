@@ -69,5 +69,16 @@ export const queryKeys = {
     details: () => [...queryKeys.categories.all(), 'detail'] as const,
     detail: (id: string | number) =>
       [...queryKeys.categories.details(), id] as const
+  },
+
+  // Questions
+  questions: {
+    all: () => ['questions'] as const,
+    lists: () => [...queryKeys.questions.all(), 'list'] as const,
+    list: (filters?: unknown) =>
+      [...queryKeys.questions.lists(), filters] as const,
+    details: () => [...queryKeys.questions.all(), 'detail'] as const,
+    detail: (id: string | number) =>
+      [...queryKeys.questions.details(), id] as const
   }
 } as const;
