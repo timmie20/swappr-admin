@@ -6,6 +6,7 @@ import {
   QuestionResponse,
   CreateQuestionDto
 } from '../types/question.types';
+import { CreateOptionParams } from '../hooks/use-create-option';
 
 /**
  * Brands API Service
@@ -87,5 +88,69 @@ export const questionApi = {
   ): Promise<void> => {
     const headers = await getClientAuthHeaders(getToken);
     await apiClient.delete(`/questions/${id}/remove`, { headers });
+  },
+
+  /**
+   * Create option(s) for a question
+   */
+  createOption: async (
+    questionId: string,
+    payload: { text?: string; options?: string[] },
+    getToken: () => Promise<string | null>,
+    mode: 'single' | 'multiple'
+  ): Promise<any> => {
+    const headers = await getClientAuthHeaders(getToken);
+
+    if (mode === 'single') {
+      const singlePayload = {
+        question_id: questionId,
+        text: payload.text
+      };
+      const { data } = await apiClient.post(`/options/add`, singlePayload, {
+        headers
+      });
+      return data;
+    } else {
+      const bulkPayload = {
+        question_id: questionId,
+        options: payload.options
+      };
+      const { data } = await apiClient.post(`/options/add-bulk`, bulkPayload, {
+        headers
+      });
+      return data;
+    }
+  },
+
+  /**
+   * Update an option
+   */
+  updateOption: async (
+    optionId: string,
+    payload: { text: string },
+    getToken: () => Promise<string | null>
+  ): Promise<any> => {
+    const headers = await getClientAuthHeaders(getToken);
+    const { data } = await apiClient.patch(
+      `/options/${optionId}/update`,
+      payload,
+      {
+        headers
+      }
+    );
+    return data;
+  },
+
+  /**
+   * Delete an option
+   */
+  deleteOption: async (
+    optionId: string,
+    getToken: () => Promise<string | null>
+  ): Promise<void> => {
+    const headers = await getClientAuthHeaders(getToken);
+    await apiClient.delete(`/options/${optionId}/delete`, {
+      headers
+    });
   }
 };

@@ -26,7 +26,8 @@ export const questionApiServer = {
     });
     return data;
   },
-  getBrandbyId: async (id: string) => {
+
+  getQuestionId: async (id: string) => {
     const auth = await getAuthHeaders();
     const { data } = await apiClient.get<Question>(`/questions/${id}`, {
       headers: auth

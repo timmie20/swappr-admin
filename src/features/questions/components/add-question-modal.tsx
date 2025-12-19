@@ -20,8 +20,8 @@ import { useCreateQuestion } from '../hooks/use-create-question';
 import { Icons } from '@/components/icons';
 import { useRouter } from 'next/navigation';
 import { useBrands } from '@/features/brands/hooks/use-brands';
-import { useMemo } from 'react';
 import { slugify } from '@/lib/utils';
+import { useBrandOptions } from '@/hooks/use-brand-options';
 
 const createQuestionSchema = z.object({
   text: z.string().min(5, 'Question must be at least 5 characters'),
@@ -64,18 +64,7 @@ export function AddQuestionModal({
     }
   });
 
-  const brandOptions = useMemo(() => {
-    if (!brandsData?.brands)
-      return [{ label: 'Universal', value: 'universal' }];
-
-    return [
-      { label: 'Universal', value: 'universal' },
-      ...brandsData.brands.map((brand) => ({
-        label: brand.brand_name,
-        value: brand.id
-      }))
-    ];
-  }, [brandsData]);
+  const brandOptions = useBrandOptions(brandsData?.brands || [], true);
 
   function onSubmit(values: CreateQuestionFormValues) {
     // Remove brand_id from payload if it's 'universal'

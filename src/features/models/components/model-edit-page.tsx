@@ -22,6 +22,7 @@ import { Icons } from '@/components/icons';
 import { Separator } from '@/components/ui/separator';
 import ModelVariationsTable from './model-variations-table';
 import { useModel } from '../hooks/use-models';
+import { useBrandOptions } from '@/hooks/use-brand-options';
 
 const editModelSchema = z.object({
   model_name: z.string().min(2, 'Model name must be at least 2 characters'),
@@ -87,10 +88,7 @@ export default function ModelEditPage({ model, brands }: ModelEditPageProps) {
     });
   }
 
-  const brandOptions = brands.map((brand) => ({
-    label: brand.brand_name,
-    value: brand.id
-  }));
+  const brandOptions = useBrandOptions(brands, false);
 
   return (
     <div className='space-y-6'>

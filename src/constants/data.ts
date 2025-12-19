@@ -47,7 +47,7 @@ export const navItems: NavItem[] = [
   },
   {
     title: 'Questions',
-    url: '/dashboard/question',
+    url: '/dashboard/questions',
     icon: 'question',
     shortcut: ['q', 'q'],
     isActive: false,

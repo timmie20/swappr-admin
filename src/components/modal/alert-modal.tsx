@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
+import { Icons } from '../icons';
 
 interface AlertModalProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ export const AlertModal: React.FC<AlertModalProps> = ({
           Cancel
         </Button>
         <Button disabled={loading} variant='destructive' onClick={onConfirm}>
+          {loading && <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />}
           Continue
         </Button>
       </div>

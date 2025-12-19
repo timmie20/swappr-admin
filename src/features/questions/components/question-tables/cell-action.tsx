@@ -54,14 +54,14 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
 
           <DropdownMenuItem
-            onClick={() => router.push(`/dashboard/question/${data.id}`)}
+            onClick={() => router.push(`/dashboard/questions/${data.id}`)}
           >
-            <IconEye className='mr-2 h-4 w-4' /> View
+            <IconEdit className='mr-2 h-4 w-4' /> Update
           </DropdownMenuItem>
 
-          <DropdownMenuItem onClick={() => setEditOpen(true)}>
-            <IconEdit className='mr-2 h-4 w-4' /> Edit
-          </DropdownMenuItem>
+          {/* <DropdownMenuItem onClick={() => setEditOpen(true)}>
+            <IconEdit className='mr-2 h-4 w-4' /> Update
+          </DropdownMenuItem> */}
 
           <DropdownMenuItem onClick={() => setDeleteOpen(true)}>
             <IconTrash className='mr-2 h-4 w-4' /> Delete

@@ -1,5 +1,10 @@
 import { Brand } from '@/features/brands';
 
+type Option = {
+  id: string;
+  text: string;
+};
+
 export interface Question {
   id: string;
   slug: string;
@@ -7,6 +12,7 @@ export interface Question {
   type: string;
   note?: string;
   brand?: Brand | null;
+  options?: Option[];
   created_at: string;
   updated_at: string;
 }
