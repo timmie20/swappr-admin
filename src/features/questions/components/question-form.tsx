@@ -65,6 +65,9 @@ export default function QuestionForm({
     }
   });
 
+  // Use form's built-in dirty state to detect changes
+  const isDirty = form.formState.isDirty;
+
   function getChangedFields(
     initialData: EditQuestionFormValues,
     formData: EditQuestionFormValues
@@ -170,7 +173,7 @@ export default function QuestionForm({
 
           <Button
             type='submit'
-            disabled={updateQuestion.isPending}
+            disabled={updateQuestion.isPending || !isDirty}
             className='w-full md:w-auto'
           >
             {updateQuestion.isPending && (
