@@ -5,13 +5,14 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
-import { Question, ValuationParameter } from '@/types';
+import { ValuationParameter } from '@/types';
 import { UseFormReturn } from 'react-hook-form';
 import React from 'react';
 import ValuationBlock from './valuation-block';
+import { ValuationQuestion } from '../api';
 
 type TValuationAssignmentProps = {
-  question: Question;
+  question: ValuationQuestion;
   form: UseFormReturn<any>;
 };
 
@@ -71,17 +72,17 @@ export default function ValuationAssignment({
     <Card className='h-fit max-w-sm px-3'>
       <CardHeader>
         <CardTitle className='text-left text-lg font-bold'>
-          {question.slug}
+          {question.text}
         </CardTitle>
-        <CardDescription>{question.label}</CardDescription>
+        <CardDescription className='text-xs'>{question.slug}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className='space-y-4'>
           {question.options.map((opt) => {
-            const param = getValuationParam(opt.value);
+            const param = getValuationParam(opt.id);
             return (
               <ValuationBlock
-                key={opt.value}
+                key={opt.id}
                 option={opt}
                 param={param}
                 questionId={question.id}

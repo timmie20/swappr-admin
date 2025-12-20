@@ -4,6 +4,7 @@ import ModelForm from './model-create-form';
 import ModelEditPage from './model-edit-page';
 import { modelsApiServer } from '../api/models.service.server';
 import { brandApiServer } from '@/features/brands/api/brands.service.server';
+import { valuationApiServer } from '@/features/valuation/api/valuation-service.server';
 
 type TModelViewPageProps = {
   modelId: string;
@@ -23,9 +24,15 @@ export default async function ModelViewPage({ modelId }: TModelViewPageProps) {
   }
 
   const model = (await modelsApiServer.getModelbyId(modelId)).model;
+
   // Edit existing model
   if (!model) {
     notFound();
   }
-  return <ModelEditPage model={model} brands={brands} />;
+  const questions = (await valuationApiServer.getQuestionsForModel(modelId))
+    .questions;
+
+  return (
+    <ModelEditPage model={model} brands={brands} modelQuestions={questions} />
+  );
 }

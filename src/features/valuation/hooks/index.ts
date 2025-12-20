@@ -1,4 +1,1 @@
-// Valuation hooks will be added here
-// Example: useCreateValuation, useUpdateValuation, useDeleteValuation
-
-export {};
+export { useQuestionsForModel } from './use-questions-for-model';

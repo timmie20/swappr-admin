@@ -5,14 +5,20 @@ import { Model } from '../types/models.types';
 import { useModel } from '../hooks/use-models';
 import ModelEditForm from './model-edit-form';
 import ModelVariationsTable from './model-variations-table';
-import { ValuationManagementModule } from '@/features/valuation';
+import { ValuationQuestionsPreview } from '@/features/valuation/components/valuation-questions-preview';
+import { ValuationQuestion } from '@/features/valuation';
 
 interface ModelEditPageProps {
   model: Model;
   brands: Brand[];
+  modelQuestions: ValuationQuestion[];
 }
 
-export default function ModelEditPage({ model, brands }: ModelEditPageProps) {
+export default function ModelEditPage({
+  model,
+  brands,
+  modelQuestions
+}: ModelEditPageProps) {
   const { data: liveModel } = useModel(model.id, model);
 
   return (
@@ -26,8 +32,11 @@ export default function ModelEditPage({ model, brands }: ModelEditPageProps) {
         variations={liveModel?.variations || []}
       />
 
-      {/* Valuation Management Module */}
-      {/* <ValuationManagementModule model={liveModel || model} form={form} /> */}
+      {/* Valuation Questions Preview */}
+      <ValuationQuestionsPreview
+        modelId={model.id}
+        modelQuestions={modelQuestions}
+      />
     </div>
   );
 }

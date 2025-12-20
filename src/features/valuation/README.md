@@ -70,6 +70,90 @@ type ValuationParameter = {
 };
 ```
 
+### ValuationQuestion Type
+
+```typescript
+type ValuationQuestion = {
+  id: string;
+  text: string;
+  brand_id: string | null;
+  options: ValuationOption[];
+};
+```
+
+### ValuationOption Type
+
+```typescript
+type ValuationOption = {
+  id: string;
+  text: string;
+  value: number | null;
+  type: string | null;
+};
+```
+
+## API & Hooks
+
+### useQuestionsForModel
+
+Fetches all questions with their options for a specific model. This is used to gather the assessment questions that determine the trade-in value of a device.
+
+**Usage:**
+
+```tsx
+import { useQuestionsForModel } from '@/features/valuation';
+
+function ValuationPage({ modelId }) {
+  const { data, isLoading, error } = useQuestionsForModel(modelId);
+
+  if (isLoading) return <div>Loading questions...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <div>
+      {data?.questions.map((question) => (
+        <div key={question.id}>
+          <h3>{question.text}</h3>
+          {question.options.map((option) => (
+            <div key={option.id}>
+              {option.text} - Value: {option.value}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+**API Endpoint:**
+
+```
+GET /questions/for-model?model_id={modelId}
+```
+
+**Response:**
+
+```json
+{
+  "questions": [
+    {
+      "id": "uuid",
+      "text": "What is the screen condition?",
+      "brand_id": "uuid | null",
+      "options": [
+        {
+          "id": "uuid",
+          "text": "Excellent",
+          "value": 100,
+          "type": "addition"
+        }
+      ]
+    }
+  ]
+}
+```
+
 ## Integration Example
 
 ```tsx
@@ -93,8 +177,9 @@ function MyPage({ model }) {
 
 ## Future Enhancements
 
-- API hooks for CRUD operations
-- Persistence layer
+- ✅ API hook for fetching questions by model (`useQuestionsForModel`)
+- API hooks for CRUD operations on valuation parameters
+- Persistence layer for saving valuations
 - Validation rules
 - Bulk import/export
 - History tracking

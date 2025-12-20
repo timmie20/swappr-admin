@@ -7,11 +7,12 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { Option, ValuationParameter } from '@/types';
+import { ValuationParameter } from '@/types';
+import { ValuationOption } from '../api';
 import React from 'react';
 
 type ValuationBlockProps = {
-  option: Option;
+  option: ValuationOption;
   param?: ValuationParameter;
   questionId: string;
   onUpdate: (
@@ -28,12 +29,12 @@ export default function ValuationBlock({
 }: ValuationBlockProps) {
   return (
     <div className='space-y-2'>
-      <Label className='text-sm font-medium'>{option.label}</Label>
+      <Label className='text-sm font-medium'>{option.text}</Label>
       <div className='flex gap-2'>
         <Select
           value={param?.adjustmentType || ''}
           onValueChange={(value) =>
-            onUpdate(option.value, 'adjustmentType', value)
+            onUpdate(option.id, 'adjustmentType', value)
           }
           required
         >
@@ -53,7 +54,7 @@ export default function ValuationBlock({
           className='flex-1/2'
           min={0}
           onChange={(e) =>
-            onUpdate(option.value, 'amount', parseFloat(e.target.value) || 0)
+            onUpdate(option.id, 'amount', parseFloat(e.target.value) || 0)
           }
         />
       </div>

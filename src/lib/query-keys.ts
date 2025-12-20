@@ -80,5 +80,12 @@ export const queryKeys = {
     details: () => [...queryKeys.questions.all(), 'detail'] as const,
     detail: (id: string | number) =>
       [...queryKeys.questions.details(), id] as const
+  },
+
+  // Valuation
+  valuation: {
+    all: () => ['valuation'] as const,
+    forModel: (modelId: string) =>
+      [...queryKeys.valuation.all(), 'for-model', modelId] as const
   }
 } as const;
