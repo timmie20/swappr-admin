@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import React from 'react';
-import ModelForm from './model-form';
+import ModelForm from './model-create-form';
 import ModelEditPage from './model-edit-page';
 import { modelsApiServer } from '../api/models.service.server';
 import { brandApiServer } from '@/features/brands/api/brands.service.server';

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { UseFormReturn } from 'react-hook-form';
-import type { ModelFormValues } from './model-form';
+import type { ModelFormValues } from './model-create-form';
 import { FormInput } from '@/components/forms/form-input';
 
 type STVProps = {

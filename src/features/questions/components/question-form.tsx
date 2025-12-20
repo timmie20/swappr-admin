@@ -107,7 +107,6 @@ export default function QuestionForm({
         }
       }
     }
-
     updateQuestion.mutate({
       id: liveQuestion?.id || question.id,
       payload

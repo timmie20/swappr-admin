@@ -197,17 +197,6 @@ export default function ModelForm({
             </Button>
           </div>
 
-          <Separator />
-
-          {/* <div className='space-y-4'>
-            <CardTitle>Valuation Parameters</CardTitle>
-            <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
-              {initialData?.valuationElements?.map((q) => (
-                <ValuationAssignment key={q} question={q} form={form} />
-              ))}
-            </div>
-          </div> */}
-
           <Button type='submit' disabled={createModel.isPending}>
             {createModel.isPending && (
               <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />

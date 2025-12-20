@@ -1,8 +1,11 @@
+import { Question } from '@/types';
+
 export interface Model {
   id: string;
   model_name: string;
   desc: string;
   variations?: Variation[];
+  valuationElements?: Question[]; // Questions for valuation
   brand?: {
     id: string;
     brand_name: string;

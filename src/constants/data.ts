@@ -143,9 +143,9 @@ export const recentSalesData: SaleUser[] = [
   }
 ];
 
-export const modelData: InitialModelData = {
+export const modelData = {
   name: '',
-  brand: ' ',
+  brand: '',
   base: 0,
   description: '',
   storageVariations: [],
