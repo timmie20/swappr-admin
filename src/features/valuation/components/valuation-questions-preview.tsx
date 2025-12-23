@@ -1,9 +1,3 @@
-/**
- * Preview Component for Valuation Questions
- *
- * Displays valuation questions for a specific phone model in a compact preview format.
- */
-
 'use client';
 
 import { ValuationQuestion, ValuationOption } from '../api/valuation-service';

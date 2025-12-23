@@ -23,13 +23,13 @@ export default function ValuationAssignment({
   const valuationParams = form.watch('valuationParams') || [];
 
   const updateValuationParam = (
-    optionValue: string,
+    optionId: string,
     field: 'adjustmentType' | 'amount',
     value: string | number
   ) => {
     const existingIndex = valuationParams.findIndex(
       (param: ValuationParameter) =>
-        param.questionId === question.id && param.optionValue === optionValue
+        param.questionId === question.id && param.optionId === optionId
     );
 
     if (existingIndex >= 0) {
@@ -46,21 +46,19 @@ export default function ValuationAssignment({
       // Create new parameter
       const newParam: ValuationParameter = {
         questionId: question.id,
-        optionValue,
+        optionId,
         adjustmentType:
-          field === 'adjustmentType'
-            ? (value as 'addition' | 'deduction')
-            : 'deduction',
+          field === 'adjustmentType' ? (value as 'add' | 'deduct') : 'deduct',
         amount: field === 'amount' ? (value as number) : 0
       };
       form.setValue('valuationParams', [...valuationParams, newParam]);
     }
   };
 
-  const getValuationParam = (optionValue: string) => {
+  const getValuationParam = (optionId: string) => {
     return valuationParams.find(
       (param: ValuationParameter) =>
-        param.questionId === question.id && param.optionValue === optionValue
+        param.questionId === question.id && param.optionId === optionId
     );
   };
 

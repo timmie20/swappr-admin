@@ -16,7 +16,7 @@ type ValuationBlockProps = {
   param?: ValuationParameter;
   questionId: string;
   onUpdate: (
-    optionValue: string,
+    optionId: string,
     field: 'adjustmentType' | 'amount',
     value: string | number
   ) => void;
@@ -42,8 +42,8 @@ export default function ValuationBlock({
             <SelectValue placeholder='Type' />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value='deduction'>Deduction</SelectItem>
-            <SelectItem value='addition'>Addition</SelectItem>
+            <SelectItem value='deduct'>Deduct</SelectItem>
+            <SelectItem value='add'>Add</SelectItem>
           </SelectContent>
         </Select>
         <Input

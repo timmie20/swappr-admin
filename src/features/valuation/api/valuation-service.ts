@@ -26,8 +26,33 @@ export type ValuationQuestion = {
  * Response type for questions by model
  */
 export type QuestionsForModelResponse = {
-  model: { id: string; model_name: string };
+  model: { id: string; model_name: string; brand_id?: string };
   questions: ValuationQuestion[];
+};
+
+/**
+ * Item for bulk assign valuation
+ */
+export type BulkAssignItem = {
+  questionId: string;
+  optionId: string;
+  adjustmentType: 'add' | 'deduct';
+  amount: number;
+};
+
+/**
+ * Request payload for bulk assign
+ */
+export type BulkAssignRequest = {
+  items: BulkAssignItem[];
+};
+
+/**
+ * Response type for bulk assign
+ */
+export type BulkAssignResponse = {
+  message: string;
+  updated: number;
 };
 
 /**
@@ -48,6 +73,31 @@ export const valuationApi = {
       {
         headers,
         params: { model_id: modelId }
+      }
+    );
+    return data;
+  },
+
+  /**
+   * Bulk assign valuation parameters to model
+   * Sets adjustment type and amount for multiple options
+   */
+  bulkAssignValuation: async (
+    modelId: string,
+    brandId: string,
+    payload: BulkAssignRequest,
+    getToken: () => Promise<string | null>
+  ): Promise<BulkAssignResponse> => {
+    const headers = await getClientAuthHeaders(getToken);
+    const { data } = await apiClient.post<BulkAssignResponse>(
+      '/option-value/bulk-assign',
+      payload,
+      {
+        headers,
+        params: {
+          model_id: modelId,
+          brand_id: brandId
+        }
       }
     );
     return data;

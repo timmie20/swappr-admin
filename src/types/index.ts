@@ -68,8 +68,8 @@ export interface InitialModelData extends Model {}
 
 export type ValuationParameter = {
   questionId: string;
-  optionValue: string;
-  adjustmentType: 'addition' | 'deduction';
+  optionId: string;
+  adjustmentType: 'add' | 'deduct';
   amount: number;
 };
 
