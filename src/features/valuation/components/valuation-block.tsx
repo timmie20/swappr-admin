@@ -10,6 +10,7 @@ import {
 import { ValuationParameter } from '@/types';
 import { ValuationOption } from '../api';
 import React from 'react';
+import { formatTimestamp } from '@/lib/format';
 
 type ValuationBlockProps = {
   option: ValuationOption;
@@ -27,9 +28,18 @@ export default function ValuationBlock({
   param,
   onUpdate
 }: ValuationBlockProps) {
+  // Format timestamp for display
+
   return (
     <div className='space-y-2'>
-      <Label className='text-sm font-medium'>{option.text}</Label>
+      <div className='flex items-center justify-between'>
+        <Label className='text-sm font-medium'>{option.text}</Label>
+        {option.updated_at && (
+          <span className='text-muted-foreground text-xs'>
+            Last Updated: {formatTimestamp(option.updated_at)}
+          </span>
+        )}
+      </div>
       <div className='flex gap-2'>
         <Select
           value={param?.adjustmentType || ''}

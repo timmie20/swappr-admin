@@ -9,6 +9,8 @@ export type ValuationOption = {
   text: string;
   value: number | null;
   type: string | null;
+  created_at?: string;
+  updated_at?: string;
 };
 
 /**

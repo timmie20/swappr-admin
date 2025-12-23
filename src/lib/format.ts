@@ -58,3 +58,15 @@ export function formatNaira(amount: number | string | undefined): string {
     maximumFractionDigits: 2
   }).format(numericAmount);
 }
+
+export const formatTimestamp = (timestamp?: string) => {
+  if (!timestamp) return null;
+  const date = new Date(timestamp);
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
