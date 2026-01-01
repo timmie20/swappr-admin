@@ -5,6 +5,9 @@ import { DataTableToolbar } from '@/components/ui/table/data-table-toolbar';
 import { useDataTable } from '@/hooks/use-data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { parseAsInteger, useQueryState } from 'nuqs';
+import { useState } from 'react';
+import { BrandModal } from '../brand-modal';
+import { Button } from '@/components/ui/button';
 
 interface BrandTableParams<TData, TValue> {
   data: TData[];
@@ -18,9 +21,7 @@ export function BrandTable<TData, TValue>({
   columns
 }: BrandTableParams<TData, TValue>) {
   const [pageSize] = useQueryState('perPage', parseAsInteger.withDefault(10));
-
   const pageCount = Math.ceil(totalItems / pageSize);
-
   const { table } = useDataTable({
     data,
     columns,
@@ -29,9 +30,20 @@ export function BrandTable<TData, TValue>({
     debounceMs: 500
   });
 
+  // Modal state
+  const [createOpen, setCreateOpen] = useState(false);
+
   return (
-    <DataTable table={table}>
-      <DataTableToolbar table={table} />
-    </DataTable>
+    <>
+      <div className='mb-2 flex justify-end'>
+        <Button onClick={() => setCreateOpen(true)} variant='default'>
+          Add New Brand
+        </Button>
+      </div>
+      <BrandModal open={createOpen} onOpenChange={setCreateOpen} brand={null} />
+      <DataTable table={table}>
+        <DataTableToolbar table={table} />
+      </DataTable>
+    </>
   );
 }

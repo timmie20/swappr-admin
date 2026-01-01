@@ -1,4 +1,4 @@
-import { InitialModelData, NavItem } from '@/types';
+import { NavItem } from '@/types';
 
 export type Product = {
   photo_url: string;

@@ -1,7 +1,7 @@
 export interface Brand {
   id: string;
   brand_name: string;
-  description?: string;
+  desc?: string;
   logo?: string;
   created_at: string;
   updated_at: string;

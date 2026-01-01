@@ -1,5 +1,4 @@
 import { Icons } from '@/components/icons';
-import { Brand } from '@/features/brands';
 import { Model } from '@/features/models/types/models.types';
 
 export interface NavItem {

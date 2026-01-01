@@ -19,7 +19,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useDeleteBrand } from '../../hooks/use-delete-brand';
-import { EditBrandModal } from '../edit-brand-modal';
+import { BrandModal } from '../brand-modal';
 
 interface CellActionProps {
   data: Brand;
@@ -47,7 +47,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         onConfirm={onConfirm}
         loading={deleteBrand.isPending}
       />
-      <EditBrandModal brand={data} open={editOpen} onOpenChange={setEditOpen} />
+      <BrandModal brand={data} open={editOpen} onOpenChange={setEditOpen} />
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant='ghost' className='h-8 w-8 p-0'>
@@ -57,7 +57,6 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align='end'>
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-
           <DropdownMenuItem
             onClick={() => router.push(`/dashboard/brand/${data.id}`)}
           >

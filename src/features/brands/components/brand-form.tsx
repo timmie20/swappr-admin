@@ -43,7 +43,7 @@ export default function BrandForm({ initialData, pageTitle }: BrandFormProps) {
     resolver: zodResolver(brandSchema),
     defaultValues: {
       name: initialData?.brand_name || '',
-      description: initialData?.description || ''
+      description: initialData?.desc || ''
     }
   });
 
@@ -53,8 +53,7 @@ export default function BrandForm({ initialData, pageTitle }: BrandFormProps) {
         {
           id: initialData.id,
           payload: {
-            brand_name: values.name,
-            description: values.description
+            brand_name: values.name
           }
         },
         {

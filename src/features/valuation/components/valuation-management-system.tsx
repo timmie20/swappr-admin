@@ -77,7 +77,7 @@ export function ValuationManagementSystem({
   });
 
   // Watch for form changes
-  const valuationParams = form.watch('valuationParams');
+  // const valuationParams = form.watch('valuationParams');
 
   // Handle form submission
   const onSubmit = async (values: ValuationFormValues) => {

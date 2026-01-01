@@ -23,6 +23,7 @@ export default async function Page(props: PageProps) {
     <PageContainer scrollable={false}>
       <div className='flex flex-1 flex-col space-y-4'>
         <Heading title='Brands' description='Manage brands for your products' />
+
         <Separator />
         <Suspense
           fallback={
