@@ -52,7 +52,10 @@ export default function BrandForm({ initialData, pageTitle }: BrandFormProps) {
       updateBrand.mutate(
         {
           id: initialData.id,
-          payload: values
+          payload: {
+            brand_name: values.name,
+            description: values.description
+          }
         },
         {
           onSuccess: () => {
@@ -61,11 +64,17 @@ export default function BrandForm({ initialData, pageTitle }: BrandFormProps) {
         }
       );
     } else {
-      createBrand.mutate(values, {
-        onSuccess: () => {
-          router.push('/dashboard/brand');
+      createBrand.mutate(
+        {
+          brand_name: values.name,
+          description: values.description
+        },
+        {
+          onSuccess: () => {
+            router.push('/dashboard/brand');
+          }
         }
-      });
+      );
     }
   }
 
