@@ -9,6 +9,7 @@ export interface Brand {
 
 export interface CreateBrandDto {
   brand_name: string;
+  description?: string;
 }
 
 export interface BrandFilters {
