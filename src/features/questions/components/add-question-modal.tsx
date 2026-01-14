@@ -41,7 +41,6 @@ interface AddQuestionModalProps {
 const questionTypes = [
   { label: 'Radio', value: 'radio' },
   { label: 'Checkbox', value: 'checkbox' },
-  { label: 'Text', value: 'text' },
   { label: 'Select', value: 'select' }
 ];
 

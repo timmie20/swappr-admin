@@ -18,6 +18,7 @@ import {
 } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useDeleteQuestion } from '../../hooks/use-delete-question';
 
 interface CellActionProps {
   data: Question;
@@ -27,11 +28,15 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const router = useRouter();
+  const deleteQuestion = useDeleteQuestion();
 
   const onConfirm = async () => {
-    // TODO: Implement delete question hook
-    console.log('Delete question:', data.id);
-    setDeleteOpen(false);
+    deleteQuestion.mutate(data.id, {
+      onSuccess: () => {
+        setDeleteOpen(false);
+        router.refresh();
+      }
+    });
   };
 
   return (
@@ -40,7 +45,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         isOpen={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         onConfirm={onConfirm}
-        loading={false}
+        loading={deleteQuestion.isPending}
       />
       {/* TODO: Add EditQuestionModal */}
       <DropdownMenu modal={false}>

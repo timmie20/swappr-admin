@@ -23,6 +23,13 @@ import { Brand } from '@/features/brands';
 import { useCreateModel } from '../hooks/use-create-model';
 import { CreateModelDto } from '../types/models.types';
 import { Icons } from '@/components/icons';
+import { useState } from 'react';
+import { uploadImage } from '@/lib/upload-service';
+import { useAuth } from '@clerk/nextjs';
+import { toast } from 'sonner';
+import Image from 'next/image';
+import { Upload, X } from 'lucide-react';
+import { IconCheck } from '@tabler/icons-react';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -38,14 +45,6 @@ const formSchema = z.object({
       })
     )
     .min(1, { message: 'Add at least one storage variation.' })
-  // valuationParams: z.array(
-  //   z.object({
-  //     questionId: z.string(),
-  //     optionValue: z.string(),
-  //     adjustmentType: z.enum(['addition', 'deduction']),
-  //     amount: z.coerce.number().min(0)
-  //   })
-  // )
 });
 
 export type ModelFormValues = z.infer<typeof formSchema>;
@@ -57,18 +56,13 @@ export default function ModelForm({
   pageTitle: string;
   brands: Brand[];
 }) {
-  // const seededValuationParams = (initialData?.valuationElements || [])
-  //   .flatMap((q) => (q.options || []).map((opt) => ({ q, opt })))
-  //   .filter(
-  //     ({ opt }) =>
-  //       typeof opt.valuationAmount === 'number' && !!opt.adjustmentType
-  //   )
-  //   .map(({ q, opt }) => ({
-  //     questionId: q.id,
-  //     optionValue: opt.value,
-  //     adjustmentType: opt.adjustmentType as 'addition' | 'deduction',
-  //     amount: Number(opt.valuationAmount)
-  //   }));
+  const { getToken } = useAuth();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imagePublicId, setImagePublicId] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [isUploading, setIsUploading] = useState(false);
 
   const fallbackStorageFields = Array.from({ length: 2 }, () => ({
     storage_capacity: 64,
@@ -95,11 +89,73 @@ export default function ModelForm({
   const router = useRouter();
   const createModel = useCreateModel();
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select a valid image file');
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 3 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+
+      setImageFile(file);
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageUpload = async () => {
+    if (!imageFile) {
+      toast.error('Please select an image first');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const response = await uploadImage(
+        imageFile,
+        'models',
+        getToken,
+        setUploadProgress
+      );
+
+      setImageUrl(response.url);
+      setImagePublicId(response.public_id);
+      toast.success('Image uploaded successfully');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to upload image');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setImageUrl(null);
+    setImagePublicId(null);
+    setUploadProgress(0);
+  };
+
   const formatForPayload = (values: ModelFormValues): CreateModelDto => {
     return {
       brand_id: values.brand,
       model_name: values.name,
       desc: values.description || '',
+      image_url: imageUrl || undefined,
+      image_public_id: imagePublicId || undefined,
       variations: values.variations
     };
   };
@@ -136,6 +192,95 @@ export default function ModelForm({
           onSubmit={form.handleSubmit(onSubmit)}
           className='space-y-8'
         >
+          {/* Image Upload Section */}
+          <div className='space-y-4'>
+            <div>
+              <label className='text-sm font-medium'>Model Image</label>
+              <p className='text-muted-foreground text-xs'>
+                Upload an image for this model (max 5MB)
+              </p>
+            </div>
+
+            {!imagePreview ? (
+              <div className='flex items-center gap-4'>
+                <input
+                  type='file'
+                  accept='image/*'
+                  onChange={handleImageSelect}
+                  className='hidden'
+                  id='model-image-input'
+                />
+                <label htmlFor='model-image-input'>
+                  <Button type='button' variant='outline' asChild>
+                    <span>
+                      <Upload className='mr-2 h-4 w-4' />
+                      Select Image
+                    </span>
+                  </Button>
+                </label>
+              </div>
+            ) : (
+              <div className='space-y-4'>
+                <div className='relative h-48 w-48 overflow-hidden rounded-lg border'>
+                  <Image
+                    src={imagePreview}
+                    alt='Preview'
+                    fill
+                    className='object-cover'
+                  />
+                  <Button
+                    type='button'
+                    variant='destructive'
+                    size='icon'
+                    className='absolute top-2 right-2'
+                    onClick={handleRemoveImage}
+                  >
+                    <X className='h-4 w-4' />
+                  </Button>
+                </div>
+
+                {!imageUrl && (
+                  <div className='space-y-2'>
+                    <Button
+                      type='button'
+                      onClick={handleImageUpload}
+                      disabled={isUploading}
+                    >
+                      {isUploading ? (
+                        <>
+                          <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />
+                          Uploading... {uploadProgress}%
+                        </>
+                      ) : (
+                        <>
+                          <Upload className='mr-2 h-4 w-4' />
+                          Upload Image
+                        </>
+                      )}
+                    </Button>
+                    {isUploading && (
+                      <div className='bg-secondary h-2 w-full overflow-hidden rounded-full'>
+                        <div
+                          className='bg-primary h-full transition-all'
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {imageUrl && (
+                  <div className='flex items-center gap-2 text-sm text-green-600'>
+                    <IconCheck className='h-4 w-4' />
+                    Image uploaded successfully
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <Separator />
+
           <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
             <FormInput
               control={form.control}

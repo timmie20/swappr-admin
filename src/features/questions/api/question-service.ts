@@ -87,7 +87,7 @@ export const questionApi = {
     getToken: () => Promise<string | null>
   ): Promise<void> => {
     const headers = await getClientAuthHeaders(getToken);
-    await apiClient.delete(`/questions/${id}/remove`, { headers });
+    await apiClient.delete(`/questions/${id}/delete`, { headers });
   },
 
   /**

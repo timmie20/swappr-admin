@@ -73,7 +73,16 @@ export const columns: ColumnDef<Model>[] = [
   },
   {
     accessorKey: 'desc',
-    header: 'DESCRIPTION'
+    header: 'DESCRIPTION',
+    cell: ({ cell }) => {
+      const description = cell.getValue<string>();
+      if (!description) return <span className='text-muted-foreground'>-</span>;
+      return (
+        <div className='max-w-[450px] truncate' title={description}>
+          {description}
+        </div>
+      );
+    }
   },
   {
     accessorKey: 'created_at',

@@ -4,6 +4,8 @@ export interface Model {
   id: string;
   model_name: string;
   desc: string;
+  image_url?: string;
+  image_public_id?: string;
   variations?: Variation[];
   valuationElements?: Question[]; // Questions for valuation
   brand?: {
@@ -43,6 +45,8 @@ export type CreateModelDto = {
   brand_id: string;
   model_name: string;
   desc: string;
+  image_url?: string;
+  image_public_id?: string;
   variations: {
     storage_capacity: number;
     price: number;
