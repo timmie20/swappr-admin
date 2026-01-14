@@ -24,3 +24,12 @@ export function formatBytes(
       : (sizes[i] ?? 'Bytes')
   }`;
 }
+
+/**
+ * Convert a string with spaces to slug format (lowercase with hyphens)
+ * @param text - The text to convert
+ * @returns Slugified string (e.g., "Security Feature FaceID" -> "security-feature-faceid")
+ */
+export function slugify(text: string): string {
+  return text.toLowerCase().trim().replace(/\s+/g, '-');
+}

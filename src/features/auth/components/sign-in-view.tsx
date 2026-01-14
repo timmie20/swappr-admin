@@ -1,6 +1,7 @@
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { SignIn as ClerkSignInForm } from '@clerk/nextjs';
+
 import { GitHubLogoIcon } from '@radix-ui/react-icons';
 import { IconStar } from '@tabler/icons-react';
 import { Metadata } from 'next';
@@ -38,14 +39,17 @@ export default function SignInViewPage({ stars }: { stars: number }) {
           >
             <path d='M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3' />
           </svg>
-          Logo
+          SWAPPR
         </div>
         <div className='relative z-20 mt-auto'>
           <blockquote className='space-y-2'>
             <p className='text-lg'>
-              &ldquo;This starter template has saved me countless hours of work
-              and helped me deliver projects to my clients faster than ever
-              before.&rdquo;
+              Swappr platform aims to create a secure and transparent system for
+              buying and swapping phones by implementing a phone rating
+              calculator to accurately represent device conditions, addressing
+              prevalent fraud in the Nigerian market. The system will utilize
+              diagnostic tools, user verification, and AI-driven fraud
+              prevention.
             </p>
             <footer className='text-sm'>Random Dude</footer>
           </blockquote>
@@ -71,10 +75,12 @@ export default function SignInViewPage({ stars }: { stars: number }) {
               <span className='font-display font-medium'>{stars}</span>
             </div>
           </Link>
+
           <ClerkSignInForm
             initialValues={{
-              emailAddress: 'your_mail+clerk_test@example.com'
+              emailAddress: ''
             }}
+            forceRedirectUrl='/dashboard/overview'
           />
 
           <p className='text-muted-foreground px-8 text-center text-sm'>

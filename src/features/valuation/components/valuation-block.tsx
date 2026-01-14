@@ -1,0 +1,73 @@
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import { ValuationParameter } from '@/types';
+import { ValuationOption } from '../api';
+import React from 'react';
+import { formatTimestamp } from '@/lib/format';
+
+type ValuationBlockProps = {
+  option: ValuationOption;
+  param?: ValuationParameter;
+  questionId: string;
+  onUpdate: (
+    optionId: string,
+    field: 'adjustmentType' | 'amount',
+    value: string | number
+  ) => void;
+};
+
+export default function ValuationBlock({
+  option,
+  param,
+  onUpdate
+}: ValuationBlockProps) {
+  // Format timestamp for display
+
+  return (
+    <div className='space-y-2'>
+      <div className='flex items-center justify-between'>
+        <Label className='text-sm font-medium'>{option.text}</Label>
+        {option.updated_at && (
+          <span className='text-muted-foreground text-xs'>
+            Last Updated: {formatTimestamp(option.updated_at)}
+          </span>
+        )}
+      </div>
+      <div className='flex gap-2'>
+        <Select
+          value={param?.adjustmentType || ''}
+          onValueChange={(value) =>
+            onUpdate(option.id, 'adjustmentType', value)
+          }
+          required
+        >
+          <SelectTrigger className='flex-1/2'>
+            <SelectValue placeholder='Type' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='deduct'>Deduct</SelectItem>
+            <SelectItem value='add'>Add</SelectItem>
+          </SelectContent>
+        </Select>
+        <Input
+          placeholder='Amount'
+          type='number'
+          step='1000'
+          value={param ? String(param.amount) : ''}
+          className='flex-1/2'
+          min={0}
+          onChange={(e) =>
+            onUpdate(option.id, 'amount', parseFloat(e.target.value) || 0)
+          }
+        />
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,95 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
+import { ValuationParameter } from '@/types';
+import { UseFormReturn } from 'react-hook-form';
+import React from 'react';
+import ValuationBlock from './valuation-block';
+import { ValuationQuestion } from '../api';
+
+type TValuationAssignmentProps = {
+  question: ValuationQuestion;
+  form: UseFormReturn<any>;
+};
+
+export default function ValuationAssignment({
+  question,
+  form
+}: TValuationAssignmentProps) {
+  const valuationParams = form.watch('valuationParams') || [];
+
+  const updateValuationParam = (
+    optionId: string,
+    field: 'adjustmentType' | 'amount',
+    value: string | number
+  ) => {
+    const existingIndex = valuationParams.findIndex(
+      (param: ValuationParameter) =>
+        param.questionId === question.id && param.optionId === optionId
+    );
+
+    if (existingIndex >= 0) {
+      const updated = {
+        ...valuationParams[existingIndex],
+        [field]: value
+      };
+      form.setValue('valuationParams', [
+        ...valuationParams.slice(0, existingIndex),
+        updated,
+        ...valuationParams.slice(existingIndex + 1)
+      ]);
+    } else {
+      // Create new parameter
+      const newParam: ValuationParameter = {
+        questionId: question.id,
+        optionId,
+        adjustmentType:
+          field === 'adjustmentType' ? (value as 'add' | 'deduct') : 'deduct',
+        amount: field === 'amount' ? (value as number) : 0
+      };
+      form.setValue('valuationParams', [...valuationParams, newParam]);
+    }
+  };
+
+  const getValuationParam = (optionId: string) => {
+    return valuationParams.find(
+      (param: ValuationParameter) =>
+        param.questionId === question.id && param.optionId === optionId
+    );
+  };
+
+  if (!question.options || question.options.length === 0) {
+    return null;
+  }
+
+  return (
+    <Card className='h-fit max-w-sm px-3'>
+      <CardHeader>
+        <CardTitle className='text-left text-lg font-bold'>
+          {question.text}
+        </CardTitle>
+        <CardDescription className='text-xs'>{question.slug}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className='space-y-4'>
+          {question.options.map((opt) => {
+            const param = getValuationParam(opt.id);
+            return (
+              <ValuationBlock
+                key={opt.id}
+                option={opt}
+                param={param}
+                questionId={question.id}
+                onUpdate={updateValuationParam}
+              />
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
