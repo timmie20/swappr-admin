@@ -4,7 +4,7 @@ import type { AdminProfile, AdminSession } from '@/types/auth';
 import { serverFetch } from '../api/server';
 
 export const getServerAdminProfile = cache(async (): Promise<AdminProfile> => {
-  return serverFetch<AdminProfile>('/admins/me', { revalidate: 0 });
+  return serverFetch<AdminProfile>('/auth/me', { revalidate: 0 });
 });
 
 export const getServerSession = cache(
