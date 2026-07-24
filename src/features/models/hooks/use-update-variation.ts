@@ -2,7 +2,6 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { modelsApi } from '../api/models.service';
-import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
 
@@ -17,12 +16,11 @@ interface UpdateVariationParams {
 }
 
 export function useUpdateVariation() {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ variationId, payload }: UpdateVariationParams) =>
-      modelsApi.updateVariation(variationId, payload, getToken),
+      modelsApi.updateVariation(variationId, payload),
     onSuccess: (_, { model_id }) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.models.detail(model_id)

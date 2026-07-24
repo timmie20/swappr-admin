@@ -1,5 +1,4 @@
-import apiClient from '@/lib/api-client';
-import { getClientAuthHeaders } from '@/lib/auth-headers';
+import apiClient from '@/lib/api/client';
 import {
   CreateModelDto,
   Model,
@@ -15,13 +14,8 @@ export const modelsApi = {
    * All apis relatesd to models
    */
 
-  getAll: async (
-    filters: DefaultFilters | undefined,
-    getToken: () => Promise<string | null>
-  ) => {
-    const headers = await getClientAuthHeaders(getToken);
+  getAll: async (filters?: DefaultFilters) => {
     const { data } = await apiClient.get<ModelsResponse>('/models', {
-      headers,
       params: filters
     });
     return data;
@@ -30,14 +24,8 @@ export const modelsApi = {
   /**
    * Get a single brand by ID
    */
-  getById: async (
-    id: string,
-    getToken: () => Promise<string | null>
-  ): Promise<Model> => {
-    const headers = await getClientAuthHeaders(getToken);
-    const { data } = await apiClient.get<{ model: Model }>(`/models/${id}`, {
-      headers
-    });
+  getById: async (id: string): Promise<Model> => {
+    const { data } = await apiClient.get<{ model: Model }>(`/models/${id}`);
     return data.model;
   },
 
@@ -45,32 +33,18 @@ export const modelsApi = {
    * Create a model
    */
 
-  create: async (
-    payload: CreateModelDto,
-    getToken: () => Promise<string | null>
-  ) => {
-    const headers = await getClientAuthHeaders(getToken);
-    const { data } = await apiClient.post<Model>(`/models/create`, payload, {
-      headers
-    });
+  create: async (payload: CreateModelDto) => {
+    const { data } = await apiClient.post<Model>(`/models/create`, payload);
     return data;
   },
 
   /**
    * Update an existing model
    */
-  update: async (
-    id: string,
-    payload: UpdateModelDto,
-    getToken: () => Promise<string | null>
-  ): Promise<Model> => {
-    const headers = await getClientAuthHeaders(getToken);
+  update: async (id: string, payload: UpdateModelDto): Promise<Model> => {
     const { data } = await apiClient.patch<{ model: Model }>(
       `/models/${id}/update`,
-      payload,
-      {
-        headers
-      }
+      payload
     );
     return data.model;
   },
@@ -78,27 +52,15 @@ export const modelsApi = {
   /**
    * Delete a variation
    */
-  deleteModel: async (
-    modelId: string,
-    getToken: () => Promise<string | null>
-  ) => {
-    const headers = await getClientAuthHeaders(getToken);
-    await apiClient.delete(`models/${modelId}/remove`, {
-      headers
-    });
+  deleteModel: async (modelId: string) => {
+    await apiClient.delete(`models/${modelId}/remove`);
   },
 
   /**
    * Create a new variation for a model
    */
-  createVariation: async (
-    payload: CreateVariationParams,
-    getToken: () => Promise<string | null>
-  ) => {
-    const headers = await getClientAuthHeaders(getToken);
-    const { data } = await apiClient.post(`/variations/add`, payload, {
-      headers
-    });
+  createVariation: async (payload: CreateVariationParams) => {
+    const { data } = await apiClient.post(`/variations/add`, payload);
     return data;
   },
 
@@ -107,14 +69,11 @@ export const modelsApi = {
    */
   updateVariation: async (
     variationId: string,
-    payload: { storage_capacity: number; price: number; note?: string },
-    getToken: () => Promise<string | null>
+    payload: { storage_capacity: number; price: number; note?: string }
   ) => {
-    const headers = await getClientAuthHeaders(getToken);
     const { data } = await apiClient.patch(
       `variations/${variationId}/update`,
-      payload,
-      { headers }
+      payload
     );
     return data;
   },
@@ -122,13 +81,7 @@ export const modelsApi = {
   /**
    * Delete a variation
    */
-  deleteVariation: async (
-    variationId: string,
-    getToken: () => Promise<string | null>
-  ) => {
-    const headers = await getClientAuthHeaders(getToken);
-    await apiClient.delete(`variations/${variationId}/remove`, {
-      headers
-    });
+  deleteVariation: async (variationId: string) => {
+    await apiClient.delete(`variations/${variationId}/remove`);
   }
 };

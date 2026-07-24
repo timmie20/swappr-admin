@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
 import { brandsApi } from '../api/brands.service';
@@ -19,7 +18,6 @@ import { brandsApi } from '../api/brands.service';
  * ```
  */
 export function useUpdateBrand() {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -29,7 +27,7 @@ export function useUpdateBrand() {
     }: {
       id: string;
       payload: { brand_name: string };
-    }) => brandsApi.update(id, payload, getToken),
+    }) => brandsApi.update(id, payload),
 
     onError: (error: any) => {
       const message =

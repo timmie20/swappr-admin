@@ -1,6 +1,5 @@
-import apiClient from '@/lib/api-client';
+import { serverFetch } from '@/lib/api/server';
 import { QuestionsForModelResponse } from './valuation-service';
-import { getAuthHeaders } from '@/lib/auth-headers.server';
 
 /**
  * Valuation API Service - Server Side
@@ -14,14 +13,8 @@ export const valuationApiServer = {
   getQuestionsForModel: async (
     modelId: string
   ): Promise<QuestionsForModelResponse> => {
-    const headers = await getAuthHeaders();
-    const { data } = await apiClient.get<QuestionsForModelResponse>(
-      '/questions/for-model',
-      {
-        headers,
-        params: { model_id: modelId }
-      }
-    );
-    return data;
+    return serverFetch<QuestionsForModelResponse>('/questions/for-model', {
+      params: { model_id: modelId }
+    });
   }
 };

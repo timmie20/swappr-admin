@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
 import { brandsApi } from '../api/brands.service';
@@ -22,12 +21,10 @@ import { CreateBrandDto } from '../types/brand.types';
  * ```
  */
 export function useCreateBrand() {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CreateBrandDto) =>
-      brandsApi.create(payload, getToken),
+    mutationFn: (payload: CreateBrandDto) => brandsApi.create(payload),
     onSuccess: () => {
       // Invalidate and refetch brands list
       queryClient.invalidateQueries({ queryKey: queryKeys.brands.lists() });

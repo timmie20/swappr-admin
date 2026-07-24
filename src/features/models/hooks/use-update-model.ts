@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
 import { modelsApi } from '../api/models.service';
@@ -20,12 +19,11 @@ import { UpdateModelDto } from '../types/models.types';
  * ```
  */
 export function useUpdateModel() {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateModelDto }) =>
-      modelsApi.update(id, payload, getToken),
+      modelsApi.update(id, payload),
 
     onError: (error: any) => {
       const message =

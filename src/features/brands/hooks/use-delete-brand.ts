@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
 import { brandsApi } from '../api/brands.service';
@@ -21,11 +20,10 @@ import { brandsApi } from '../api/brands.service';
  * ```
  */
 export function useDeleteBrand() {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => brandsApi.delete(id, getToken),
+    mutationFn: (id: string) => brandsApi.delete(id),
     onSuccess: () => {
       // Invalidate brands list
       queryClient.invalidateQueries({ queryKey: queryKeys.brands.lists() });

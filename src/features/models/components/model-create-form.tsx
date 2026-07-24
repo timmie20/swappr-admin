@@ -25,7 +25,6 @@ import { CreateModelDto } from '../types/models.types';
 import { Icons } from '@/components/icons';
 import { useState } from 'react';
 import { uploadImage } from '@/lib/upload-service';
-import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { Upload, X } from 'lucide-react';
@@ -56,7 +55,6 @@ export default function ModelForm({
   pageTitle: string;
   brands: Brand[];
 }) {
-  const { getToken } = useAuth();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -127,7 +125,6 @@ export default function ModelForm({
       const response = await uploadImage(
         imageFile,
         'models',
-        getToken,
         setUploadProgress
       );
 

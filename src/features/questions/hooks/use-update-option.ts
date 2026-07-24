@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
 import { questionApi } from '../api/question-service';
@@ -16,12 +15,11 @@ interface UpdateOptionParams {
  * Hook to update an existing option
  */
 export function useUpdateOption() {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ optionId, payload }: UpdateOptionParams) =>
-      questionApi.updateOption(optionId, payload, getToken),
+      questionApi.updateOption(optionId, payload),
     onSuccess: (_, { questionId }) => {
       // Invalidate question detail to refetch with updated options
       queryClient.invalidateQueries({

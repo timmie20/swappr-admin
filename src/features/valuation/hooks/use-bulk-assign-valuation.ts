@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
 import { valuationApi, BulkAssignRequest } from '../api/valuation-service';
@@ -36,12 +35,11 @@ export type BulkAssignParams = {
  * ```
  */
 export function useBulkAssignValuation() {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ modelId, brandId, payload }: BulkAssignParams) =>
-      valuationApi.bulkAssignValuation(modelId, brandId, payload, getToken),
+      valuationApi.bulkAssignValuation(modelId, brandId, payload),
     onSuccess: (data, variables) => {
       // Invalidate questions for this model to refetch updated values
       queryClient.invalidateQueries({

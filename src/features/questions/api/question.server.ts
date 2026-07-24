@@ -1,5 +1,4 @@
-import apiClient from '@/lib/api-client';
-import { getAuthHeaders } from '@/lib/auth-headers.server';
+import { serverFetch } from '@/lib/api/server';
 import {
   Question,
   QuestionFilters,
@@ -18,20 +17,10 @@ export const questionApiServer = {
    * @returns Promise<QuestionResponse>
    */
   getAll: async (filters?: QuestionFilters): Promise<QuestionResponse> => {
-    const auth = await getAuthHeaders();
-
-    const { data } = await apiClient.get<QuestionResponse>('/questions', {
-      headers: auth,
-      params: filters
-    });
-    return data;
+    return serverFetch<QuestionResponse>('/questions', { params: filters });
   },
 
   getQuestionId: async (id: string) => {
-    const auth = await getAuthHeaders();
-    const { data } = await apiClient.get<Question>(`/questions/${id}`, {
-      headers: auth
-    });
-    return data;
+    return serverFetch<Question>(`/questions/${id}`);
   }
 };

@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
 import { questionApi } from '../api/question-service';
@@ -16,12 +15,11 @@ interface UpdateQuestionParams {
  * @returns React Query mutation for updating a question
  */
 export function useUpdateQuestion() {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ id, payload }: UpdateQuestionParams) =>
-      questionApi.update(id, payload, getToken),
+      questionApi.update(id, payload),
     onSuccess: (data, variables) => {
       // Update the cache with the unwrapped server response
       queryClient.setQueryData(
