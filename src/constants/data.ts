@@ -53,6 +53,14 @@ export const navItems: NavItem[] = [
     isActive: false,
     items: [] // No child items
   },
+  {
+    title: 'Categories',
+    url: '/dashboard/category',
+    icon: 'category',
+    shortcut: ['c', 't'],
+    isActive: false,
+    items: [] // No child items
+  },
 
   {
     title: 'Account',
