@@ -1,5 +1,4 @@
-import apiClient from '@/lib/api-client';
-import { getClientAuthHeaders } from '@/lib/auth-headers';
+import apiClient from '@/lib/api/client';
 
 export interface UploadImageResponse {
   message: string;
@@ -13,11 +12,8 @@ export interface UploadImageResponse {
 export const uploadImage = async (
   file: File,
   folder: string,
-  getToken: () => Promise<string | null>,
   onProgress?: (progress: number) => void
 ): Promise<UploadImageResponse> => {
-  const headers = await getClientAuthHeaders(getToken);
-
   const formData = new FormData();
   formData.append('file', file);
 
@@ -26,7 +22,6 @@ export const uploadImage = async (
     formData,
     {
       headers: {
-        ...headers,
         'Content-Type': 'multipart/form-data'
       },
       onUploadProgress: (progressEvent) => {

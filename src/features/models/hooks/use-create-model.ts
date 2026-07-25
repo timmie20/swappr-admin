@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
 import { modelsApi } from '../api/models.service';
@@ -22,12 +21,10 @@ import { CreateModelDto } from '../types/models.types';
  * ```
  */
 export function useCreateModel() {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CreateModelDto) =>
-      modelsApi.create(payload, getToken),
+    mutationFn: (payload: CreateModelDto) => modelsApi.create(payload),
     onSuccess: () => {
       // Invalidate and refetch models list
       queryClient.invalidateQueries({ queryKey: queryKeys.models.lists() });

@@ -7,8 +7,10 @@ import { UserNav } from './user-nav';
 import { ThemeSelector } from '../theme-selector';
 import { ModeToggle } from './ThemeToggle/theme-toggle';
 import CtaGithub from './cta-github';
+import { getServerSession } from '@/lib/auth/session';
 
-export default function Header() {
+export default async function Header() {
+  const session = await getServerSession();
   return (
     <header className='flex h-16 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12'>
       <div className='flex items-center gap-2 px-4'>
@@ -22,7 +24,7 @@ export default function Header() {
         <div className='hidden md:flex'>
           <SearchInput />
         </div>
-        <UserNav />
+        <UserNav session={session} />
         <ModeToggle />
         <ThemeSelector />
       </div>

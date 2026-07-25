@@ -71,6 +71,17 @@ export const queryKeys = {
       [...queryKeys.categories.details(), id] as const
   },
 
+  // Collections
+  collections: {
+    all: () => ['collections'] as const,
+    lists: () => [...queryKeys.collections.all(), 'list'] as const,
+    list: (filters?: unknown) =>
+      [...queryKeys.collections.lists(), filters] as const,
+    details: () => [...queryKeys.collections.all(), 'detail'] as const,
+    detail: (id: string | number) =>
+      [...queryKeys.collections.details(), id] as const
+  },
+
   // Questions
   questions: {
     all: () => ['questions'] as const,

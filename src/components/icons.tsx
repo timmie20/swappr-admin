@@ -33,7 +33,9 @@ import {
   IconBrandGithub,
   IconDeviceMobile,
   IconUserPlus,
-  IconHttpQue
+  IconHttpQue,
+  IconCategory,
+  IconStack2
 } from '@tabler/icons-react';
 
 export type Icon = React.ComponentType<IconProps>;
@@ -72,5 +74,7 @@ export const Icons = {
   check: IconCheck,
   phone: IconDeviceMobile,
   userPlus: IconUserPlus,
-  question: IconHttpQue
+  question: IconHttpQue,
+  category: IconCategory,
+  collection: IconStack2
 };

@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
 import { questionApi } from '../api/question-service';
@@ -14,17 +13,11 @@ export interface CreateOptionParams {
  * Hook to create new option(s) for a question
  */
 export function useCreateOption() {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ questionId, text, options }: CreateOptionParams) =>
-      questionApi.createOption(
-        questionId,
-        { text, options },
-        getToken,
-        'single'
-      ),
+      questionApi.createOption(questionId, { text, options }, 'single'),
     onSuccess: (data, variables) => {
       // Invalidate question detail to refetch with new options
       queryClient.invalidateQueries({
@@ -42,17 +35,11 @@ export function useCreateOption() {
 }
 
 export function useCreateMultipleOption() {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ questionId, text, options }: CreateOptionParams) =>
-      questionApi.createOption(
-        questionId,
-        { text, options },
-        getToken,
-        'multiple'
-      ),
+      questionApi.createOption(questionId, { text, options }, 'multiple'),
     onSuccess: (data, variables) => {
       // Invalidate question detail to refetch with new options
       queryClient.invalidateQueries({

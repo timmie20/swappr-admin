@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@clerk/nextjs';
 import { queryKeys } from '@/lib/query-keys';
 import { brandsApi } from '../api/brands.service';
 import { BrandFilters } from '../types/brand.types';
@@ -16,12 +15,9 @@ import { BrandFilters } from '../types/brand.types';
  * ```
  */
 export function useBrands(filters?: BrandFilters) {
-  const { getToken } = useAuth();
-
   return useQuery({
     queryKey: queryKeys.brands.list(filters),
-    queryFn: () => brandsApi.getAll(filters, getToken),
-    enabled: !!getToken // Only run if authenticated
+    queryFn: () => brandsApi.getAll(filters)
   });
 }
 
@@ -37,11 +33,9 @@ export function useBrands(filters?: BrandFilters) {
  * ```
  */
 export function useBrand(id: string) {
-  const { getToken } = useAuth();
-
   return useQuery({
     queryKey: queryKeys.brands.detail(id),
-    queryFn: () => brandsApi.getById(id, getToken),
-    enabled: !!id && !!getToken // Only run if we have an ID and token
+    queryFn: () => brandsApi.getById(id),
+    enabled: !!id
   });
 }

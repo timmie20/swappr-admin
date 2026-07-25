@@ -1,5 +1,4 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { useAuth } from '@clerk/nextjs';
 import { queryKeys } from '@/lib/query-keys';
 import {
   valuationApi,
@@ -39,11 +38,9 @@ export function useQuestionsForModel(
   initialData?: QuestionsForModelResponse,
   enabled: boolean = true
 ): UseQueryResult<QuestionsForModelResponse, Error> {
-  const { getToken } = useAuth();
-
   return useQuery({
     queryKey: queryKeys.valuation.forModel(modelId),
-    queryFn: () => valuationApi.getQuestionsForModel(modelId, getToken),
+    queryFn: () => valuationApi.getQuestionsForModel(modelId),
     enabled: enabled && !!modelId,
     initialData,
     staleTime: 5 * 60 * 1000, // 5 minutes

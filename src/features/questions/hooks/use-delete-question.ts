@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
 import { questionApi } from '../api/question-service';
@@ -19,11 +18,10 @@ import { questionApi } from '../api/question-service';
  * ```
  */
 export function useDeleteQuestion() {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => questionApi.delete(id, getToken),
+    mutationFn: (id: string) => questionApi.delete(id),
     onSuccess: () => {
       // Invalidate and refetch questions list
       queryClient.invalidateQueries({ queryKey: queryKeys.questions.lists() });

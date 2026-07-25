@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
 import { questionApi } from '../api/question-service';
@@ -22,12 +21,10 @@ import { CreateQuestionDto } from '../types/question.types';
  * ```
  */
 export function useCreateQuestion() {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CreateQuestionDto) =>
-      questionApi.create(payload, getToken),
+    mutationFn: (payload: CreateQuestionDto) => questionApi.create(payload),
     onSuccess: () => {
       // Invalidate and refetch questions list
       queryClient.invalidateQueries({ queryKey: queryKeys.questions.lists() });

@@ -1,5 +1,4 @@
-import apiClient from '@/lib/api-client';
-import { getClientAuthHeaders } from '@/lib/auth-headers';
+import apiClient from '@/lib/api/client';
 
 /**
  * Option type for valuation questions
@@ -66,14 +65,11 @@ export const valuationApi = {
    * Used to determine trade-in value assessment
    */
   getQuestionsForModel: async (
-    modelId: string,
-    getToken: () => Promise<string | null>
+    modelId: string
   ): Promise<QuestionsForModelResponse> => {
-    const headers = await getClientAuthHeaders(getToken);
     const { data } = await apiClient.get<QuestionsForModelResponse>(
       '/questions/for-model',
       {
-        headers,
         params: { model_id: modelId }
       }
     );
@@ -87,15 +83,12 @@ export const valuationApi = {
   bulkAssignValuation: async (
     modelId: string,
     brandId: string,
-    payload: BulkAssignRequest,
-    getToken: () => Promise<string | null>
+    payload: BulkAssignRequest
   ): Promise<BulkAssignResponse> => {
-    const headers = await getClientAuthHeaders(getToken);
     const { data } = await apiClient.post<BulkAssignResponse>(
       '/option-value/bulk-assign',
       payload,
       {
-        headers,
         params: {
           model_id: modelId,
           brand_id: brandId

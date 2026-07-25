@@ -1,5 +1,4 @@
-import apiClient from '@/lib/api-client';
-import { getAuthHeaders } from '@/lib/auth-headers.server';
+import { serverFetch } from '@/lib/api/server';
 import { ModelsResponse, ModelFilters, Model } from '../types/models.types';
 
 export const modelsApiServer = {
@@ -14,21 +13,10 @@ export const modelsApiServer = {
    * @returns Promise<ModelsResponse>
    */
   getAll: async (filters?: ModelFilters): Promise<ModelsResponse> => {
-    const auth = await getAuthHeaders();
-
-    const { data } = await apiClient.get<ModelsResponse>('/models', {
-      headers: auth,
-      params: filters
-    });
-
-    return data;
+    return serverFetch<ModelsResponse>('/models', { params: filters });
   },
 
   getModelbyId: async (id: string) => {
-    const auth = await getAuthHeaders();
-    const { data } = await apiClient.get<{ model: Model }>(`/models/${id}`, {
-      headers: auth
-    });
-    return data;
+    return serverFetch<{ model: Model }>(`/models/${id}`);
   }
 };
