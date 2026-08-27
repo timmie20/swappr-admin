@@ -93,6 +93,16 @@ export const queryKeys = {
       [...queryKeys.questions.details(), id] as const
   },
 
+  // Payouts
+  payouts: {
+    all: () => ['payouts'] as const,
+    lists: () => [...queryKeys.payouts.all(), 'list'] as const,
+    list: (filters?: unknown) =>
+      [...queryKeys.payouts.lists(), filters] as const,
+    details: () => [...queryKeys.payouts.all(), 'detail'] as const,
+    detail: (id: string) => [...queryKeys.payouts.details(), id] as const
+  },
+
   // Valuation
   valuation: {
     all: () => ['valuation'] as const,

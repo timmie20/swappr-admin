@@ -69,6 +69,14 @@ export const navItems: NavItem[] = [
     isActive: false,
     items: [] // No child items
   },
+  {
+    title: 'Payouts',
+    url: '/dashboard/payout',
+    icon: 'payout',
+    shortcut: ['p', 'y'],
+    isActive: false,
+    items: [] // No child items
+  },
 
   {
     title: 'Account',
