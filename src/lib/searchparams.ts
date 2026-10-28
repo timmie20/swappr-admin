@@ -1,9 +1,7 @@
 import {
   createSearchParamsCache,
   createSerializer,
-  parseAsFloat,
   parseAsInteger,
-  parseAsIsoDate,
   parseAsString,
   parseAsStringEnum
 } from 'nuqs/server';
@@ -16,21 +14,7 @@ export const searchParams = {
   gender: parseAsString,
   category: parseAsString,
   is_active: parseAsStringEnum(['true', 'false']).withDefault('true'),
-  sort: getSortingStateParser().withDefault([]),
-  // Payouts
-  status: parseAsStringEnum([
-    'all',
-    'pending',
-    'processing',
-    'completed',
-    'failed'
-  ]).withDefault('all'),
-  vendor_id: parseAsString,
-  search: parseAsString,
-  min_amount: parseAsFloat,
-  max_amount: parseAsFloat,
-  created_from: parseAsIsoDate,
-  created_to: parseAsIsoDate
+  sort: getSortingStateParser().withDefault([])
   // advanced filter
   // filters: getFiltersStateParser().withDefault([]),
   // joinOperator: parseAsStringEnum(['and', 'or']).withDefault('and')

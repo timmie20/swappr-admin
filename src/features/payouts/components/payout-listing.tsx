@@ -1,42 +1,122 @@
-import { searchParamsCache } from '@/lib/searchparams';
-import { payoutsApiServer } from '../api/payouts.service.server';
-import { PayoutTable } from './payout-tables';
+'use client';
+
+import { QueryErrorState } from '@/components/superadmin-required';
+import { Input } from '@/components/ui/input';
+import { DataTable } from '@/components/ui/table/data-table';
+import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useDataTable } from '@/hooks/use-data-table';
+import { useDebouncedCallback } from '@/hooks/use-debounced-callback';
+import { formatKobo } from '@/lib/format';
+import {
+  parseAsInteger,
+  parseAsString,
+  parseAsStringEnum,
+  useQueryState
+} from 'nuqs';
+import { useState } from 'react';
+import { usePayouts } from '../hooks/use-payouts';
+import { AdminPayoutRow, PayoutStatus } from '../types/payout.types';
 import { columns } from './payout-tables/columns';
-import { PayoutSortBy, PayoutStatus, SortOrder } from '../types/payout.types';
 
-export default async function PayoutListingPage() {
-  const page = searchParamsCache.get('page');
-  const limit = searchParamsCache.get('perPage');
-  const status = searchParamsCache.get('status');
-  const search = searchParamsCache.get('search');
-  const minAmount = searchParamsCache.get('min_amount');
-  const maxAmount = searchParamsCache.get('max_amount');
-  const createdFrom = searchParamsCache.get('created_from');
-  const createdTo = searchParamsCache.get('created_to');
-  const [sortEntry] = searchParamsCache.get('sort') ?? [];
+const TABS = [
+  { value: PayoutStatus.REQUESTED, label: 'Requested' },
+  { value: PayoutStatus.APPROVED, label: 'Approved · awaiting transfer' },
+  { value: PayoutStatus.COMPLETED, label: 'Paid' },
+  { value: PayoutStatus.REJECTED, label: 'Rejected' },
+  { value: 'all', label: 'All' }
+] as const;
 
-  const data = await payoutsApiServer.getAll({
+const TAB_VALUES = TABS.map((tab) => tab.value);
+
+function PayoutTable({
+  data,
+  totalItems
+}: {
+  data: AdminPayoutRow[];
+  totalItems: number;
+}) {
+  const [pageSize] = useQueryState('perPage', parseAsInteger.withDefault(10));
+  const { table } = useDataTable({
+    data,
+    columns,
+    pageCount: Math.max(1, Math.ceil(totalItems / pageSize))
+  });
+  return <DataTable table={table} />;
+}
+
+export default function PayoutListingPage() {
+  const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
+  const [perPage] = useQueryState('perPage', parseAsInteger.withDefault(10));
+  const [status, setStatus] = useQueryState(
+    'status',
+    parseAsStringEnum([...TAB_VALUES]).withDefault(PayoutStatus.REQUESTED)
+  );
+  const [search, setSearch] = useQueryState('search', parseAsString);
+  const [searchInput, setSearchInput] = useState(search ?? '');
+  const debouncedSetSearch = useDebouncedCallback((value: string) => {
+    void setPage(1);
+    void setSearch(value.trim() || null);
+  }, 500);
+
+  const { data, isLoading, error } = usePayouts({
     page,
-    limit,
-    status: status && status !== 'all' ? (status as PayoutStatus) : undefined,
-    search: search ?? undefined,
-    min_amount: minAmount ?? undefined,
-    max_amount: maxAmount ?? undefined,
-    created_from: createdFrom
-      ? createdFrom.toISOString().slice(0, 10)
-      : undefined,
-    created_to: createdTo ? createdTo.toISOString().slice(0, 10) : undefined,
-    sort_by: sortEntry ? (sortEntry.id as PayoutSortBy) : undefined,
-    sort_order: sortEntry
-      ? ((sortEntry.desc ? 'DESC' : 'ASC') as SortOrder)
-      : undefined
+    limit: perPage,
+    status: status === 'all' ? undefined : (status as PayoutStatus),
+    search: search ?? undefined
   });
 
   return (
-    <PayoutTable
-      data={data.payouts}
-      totalItems={data.total}
-      columns={columns}
-    />
+    <div className='flex flex-1 flex-col space-y-4'>
+      <div className='flex flex-wrap items-center justify-between gap-2'>
+        <Tabs
+          value={status}
+          onValueChange={(value) => {
+            void setPage(1);
+            void setStatus(value as (typeof TAB_VALUES)[number]);
+          }}
+        >
+          <TabsList>
+            {TABS.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        <Input
+          placeholder='Order number, bank reference or SWAPPR-PAYOUT-…'
+          value={searchInput}
+          onChange={(event) => {
+            setSearchInput(event.target.value);
+            debouncedSetSearch(event.target.value);
+          }}
+          className='h-8 w-80'
+        />
+      </div>
+
+      {data && (
+        <p className='text-muted-foreground text-xs'>
+          Ledger operating account:{' '}
+          <span
+            className={
+              data.operating_account_balance_kobo < 0
+                ? 'text-destructive font-medium'
+                : 'text-foreground font-medium'
+            }
+          >
+            {formatKobo(data.operating_account_balance_kobo)}
+          </span>
+        </p>
+      )}
+
+      {error ? (
+        <QueryErrorState error={error} title='Could not load payouts' />
+      ) : isLoading || !data ? (
+        <DataTableSkeleton columnCount={7} rowCount={6} filterCount={0} />
+      ) : (
+        <PayoutTable data={data.payouts} totalItems={data.total} />
+      )}
+    </div>
   );
 }

@@ -1,23 +1,33 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
-import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
-import { Payout, PayoutStatus } from '../../types/payout.types';
-import { Column, ColumnDef } from '@tanstack/react-table';
-import { formatDate, formatNaira } from '@/lib/format';
-import { CellAction } from './cell-action';
+import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
+import { formatLagosDateTime, formatNaira } from '@/lib/format';
+import { ColumnDef } from '@tanstack/react-table';
+import { IconAlertTriangle, IconEye } from '@tabler/icons-react';
+import Link from 'next/link';
+import { AdminPayoutRow, PayoutStatus } from '../../types/payout.types';
+import { PayoutStatusBadge } from '../payout-status-badge';
 
-const STATUS_BADGE_VARIANT: Record<
-  PayoutStatus,
-  'default' | 'secondary' | 'destructive' | 'outline'
-> = {
-  [PayoutStatus.PENDING]: 'outline',
-  [PayoutStatus.PROCESSING]: 'secondary',
-  [PayoutStatus.COMPLETED]: 'default',
-  [PayoutStatus.FAILED]: 'destructive'
-};
+// The timestamp that matters for each state
+function stateDate(payout: AdminPayoutRow): string | null {
+  switch (payout.status) {
+    case PayoutStatus.APPROVED:
+      return payout.approved_at;
+    case PayoutStatus.COMPLETED:
+      return payout.paid_at;
+    case PayoutStatus.REJECTED:
+      return payout.rejected_at;
+    default:
+      return payout.requested_at ?? payout.created_at;
+  }
+}
 
-export const columns: ColumnDef<Payout>[] = [
+export const columns: ColumnDef<AdminPayoutRow>[] = [
   {
     id: 'vendor',
     header: 'VENDOR',
@@ -28,9 +38,9 @@ export const columns: ColumnDef<Payout>[] = [
           <span className='font-medium'>
             {vendor?.business_name || vendor?.trading_name || 'Unknown vendor'}
           </span>
-          {vendor?.contact_email && (
+          {vendor?.contact_number && (
             <span className='text-muted-foreground text-xs'>
-              {vendor.contact_email}
+              {vendor.contact_number}
             </span>
           )}
         </div>
@@ -39,95 +49,80 @@ export const columns: ColumnDef<Payout>[] = [
   },
   {
     id: 'order_number',
-    accessorKey: 'order_number',
     header: 'ORDER',
-    cell: ({ cell }) => (
-      <span className='text-muted-foreground text-xs'>
-        {cell.getValue<Payout['order_number']>() || '—'}
-      </span>
-    )
-  },
-  {
-    id: 'transfer_reference',
-    accessorKey: 'transfer_reference',
-    header: 'REFERENCE',
-    cell: ({ cell }) => (
-      <span className='text-muted-foreground font-mono text-xs'>
-        {cell.getValue<Payout['transfer_reference']>() || '—'}
-      </span>
-    )
+    cell: ({ row }) =>
+      row.original.order_number ? (
+        <Link
+          href={`/dashboard/orders/${row.original.order_number}`}
+          className='font-mono text-xs hover:underline'
+        >
+          {row.original.order_number}
+        </Link>
+      ) : (
+        <span className='text-muted-foreground text-xs'>—</span>
+      )
   },
   {
     id: 'net_amount',
-    accessorKey: 'net_amount',
-    header: ({ column }: { column: Column<Payout, unknown> }) => (
-      <DataTableColumnHeader column={column} title='Net Amount' />
-    ),
-    cell: ({ cell }) => (
-      <span className='font-medium'>
-        {formatNaira(cell.getValue<Payout['net_amount']>())}
-      </span>
-    ),
-    enableSorting: true
+    header: 'AMOUNT',
+    cell: ({ row }) => (
+      <div className='flex items-center gap-1.5'>
+        <span className='font-medium'>
+          {formatNaira(row.original.net_amount ?? undefined)}
+        </span>
+        {row.original.operating_balance_below_amount && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <IconAlertTriangle
+                className='h-4 w-4 text-amber-500'
+                aria-label='Operating balance below amount'
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              The ledger’s operating account holds less than this payout — the
+              Paystack settlement may not have landed yet.
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+    )
   },
   {
     id: 'status',
-    accessorKey: 'status',
-    header: ({ column }: { column: Column<Payout, unknown> }) => (
-      <DataTableColumnHeader column={column} title='Status' />
-    ),
-    cell: ({ cell }) => {
-      const status = cell.getValue<Payout['status']>();
-      return (
-        <Badge variant={STATUS_BADGE_VARIANT[status]} className='capitalize'>
-          {status}
-        </Badge>
-      );
-    },
-    enableSorting: true
+    header: 'STATUS',
+    cell: ({ row }) => <PayoutStatusBadge status={row.original.status} />
   },
   {
-    id: 'completed_at',
-    accessorKey: 'completed_at',
-    header: ({ column }: { column: Column<Payout, unknown> }) => (
-      <DataTableColumnHeader column={column} title='Completed' />
-    ),
-    cell: ({ cell }) => {
-      const date = cell.getValue<Payout['completed_at']>();
-      return (
-        <div>
-          {date
-            ? formatDate(date, {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-              })
-            : '—'}
-        </div>
-      );
-    },
-    enableSorting: true
+    id: 'reference',
+    header: 'BANK REF / NARRATION',
+    cell: ({ row }) => (
+      <span className='text-muted-foreground font-mono text-xs'>
+        {row.original.bank_transfer_reference || row.original.narration}
+      </span>
+    )
   },
   {
-    id: 'created_at',
-    accessorKey: 'created_at',
-    header: ({ column }: { column: Column<Payout, unknown> }) => (
-      <DataTableColumnHeader column={column} title='Created' />
-    ),
-    cell: ({ cell }) => (
-      <div>
-        {formatDate(cell.getValue<Payout['created_at']>(), {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric'
-        })}
-      </div>
-    ),
-    enableSorting: true
+    id: 'date',
+    header: 'SINCE',
+    cell: ({ row }) => (
+      <span className='text-sm'>
+        {formatLagosDateTime(stateDate(row.original))}
+      </span>
+    )
   },
   {
     id: 'actions',
     header: 'ACTIONS',
-    cell: ({ row }) => <CellAction data={row.original} />
+    cell: ({ row }) => (
+      <Button variant='ghost' size='sm' asChild>
+        <Link href={`/dashboard/payout/${row.original.id}`}>
+          <IconEye className='mr-1 h-4 w-4' />
+          {row.original.status === PayoutStatus.REQUESTED ||
+          row.original.status === PayoutStatus.APPROVED
+            ? 'Review'
+            : 'View'}
+        </Link>
+      </Button>
+    )
   }
 ];

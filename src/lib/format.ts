@@ -59,6 +59,63 @@ export function formatNaira(amount: number | string | undefined): string {
   }).format(numericAmount);
 }
 
+/** Ledger amounts are whole kobo integers; display them as naira. */
+export function formatKobo(kobo: number | string | null | undefined): string {
+  if (kobo === undefined || kobo === null) return '—';
+  const numeric = Number(kobo);
+  if (isNaN(numeric)) return '—';
+  return formatNaira(numeric / 100);
+}
+
+const LAGOS_TIME_ZONE = 'Africa/Lagos';
+
+/** ISO 8601 UTC timestamp → date and time in Nigeria time. */
+export function formatLagosDateTime(
+  timestamp: string | Date | null | undefined
+): string {
+  if (!timestamp) return '—';
+  const date = new Date(timestamp);
+  if (isNaN(date.getTime())) return '—';
+  return new Intl.DateTimeFormat('en-NG', {
+    timeZone: LAGOS_TIME_ZONE,
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(date);
+}
+
+/** ISO 8601 UTC timestamp → today's date in Nigeria time, as YYYY-MM-DD. */
+export function lagosDateKey(timestamp: string | Date = new Date()): string {
+  // en-CA formats as YYYY-MM-DD
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: LAGOS_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(new Date(timestamp));
+}
+
+/**
+ * A calendar date string ("YYYY-MM-DD", e.g. fulfillment.estimated_arrival).
+ * Built from its parts in UTC — `new Date('2026-11-03')` would show as the
+ * previous day in timezones west of UTC.
+ */
+export function formatCalendarDate(value: string | null | undefined): string {
+  if (!value) return '—';
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  if (!match) return value;
+  const [, y, m, d] = match;
+  return new Intl.DateTimeFormat('en-NG', {
+    timeZone: 'UTC',
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  }).format(new Date(Date.UTC(Number(y), Number(m) - 1, Number(d))));
+}
+
 export const formatTimestamp = (timestamp?: string) => {
   if (!timestamp) return null;
   const date = new Date(timestamp);

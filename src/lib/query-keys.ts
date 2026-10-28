@@ -103,6 +103,39 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.payouts.details(), id] as const
   },
 
+  // Orders
+  orders: {
+    all: () => ['orders'] as const,
+    lists: () => [...queryKeys.orders.all(), 'list'] as const,
+    list: (filters?: unknown) =>
+      [...queryKeys.orders.lists(), filters] as const,
+    details: () => [...queryKeys.orders.all(), 'detail'] as const,
+    detail: (orderNumber: string) =>
+      [...queryKeys.orders.details(), orderNumber] as const
+  },
+
+  // Delivery reviews
+  deliveryReviews: {
+    all: () => ['delivery-reviews'] as const,
+    lists: () => [...queryKeys.deliveryReviews.all(), 'list'] as const,
+    list: (filters?: unknown) =>
+      [...queryKeys.deliveryReviews.lists(), filters] as const
+  },
+
+  // Ledger
+  ledger: {
+    all: () => ['ledger'] as const,
+    summary: () => [...queryKeys.ledger.all(), 'summary'] as const,
+    reconciliation: () =>
+      [...queryKeys.ledger.all(), 'reconciliation'] as const,
+    transactions: (filters?: unknown) =>
+      [...queryKeys.ledger.all(), 'transactions', filters] as const,
+    paystackSettlements: () =>
+      [...queryKeys.ledger.all(), 'paystack-settlements'] as const,
+    syncIssues: (filters?: unknown) =>
+      [...queryKeys.ledger.all(), 'sync-issues', filters] as const
+  },
+
   // Valuation
   valuation: {
     all: () => ['valuation'] as const,

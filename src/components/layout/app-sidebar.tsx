@@ -29,7 +29,7 @@ import {
   SidebarRail
 } from '@/components/ui/sidebar';
 import { UserAvatarProfile } from '@/components/user-avatar-profile';
-import { navItems } from '@/constants/data';
+import { getNavItems } from '@/constants/data';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useLogout } from '@/hooks/services/use-auth';
 import type { AdminSession } from '@/types/auth';
@@ -73,6 +73,10 @@ export default function AppSidebar({
   };
 
   const activeTenant = tenants[0];
+  const navItems = React.useMemo(
+    () => getNavItems(session?.role),
+    [session?.role]
+  );
 
   const fullName = session
     ? [session.firstName, session.lastName].filter(Boolean).join(' ') ||

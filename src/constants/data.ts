@@ -1,3 +1,4 @@
+import { isSuperadmin } from '@/lib/auth/roles';
 import { NavItem } from '@/types';
 
 export type Product = {
@@ -70,12 +71,60 @@ export const navItems: NavItem[] = [
     items: [] // No child items
   },
   {
-    title: 'Payouts',
-    url: '/dashboard/payout',
-    icon: 'payout',
-    shortcut: ['p', 'y'],
+    title: 'Orders',
+    url: '/dashboard/orders',
+    icon: 'order',
+    shortcut: ['o', 'o'],
     isActive: false,
     items: [] // No child items
+  },
+  {
+    title: 'Delivery Reviews',
+    url: '/dashboard/delivery-reviews',
+    icon: 'delivery',
+    shortcut: ['d', 'r'],
+    isActive: false,
+    superadminOnly: true,
+    items: [] // No child items
+  },
+  {
+    title: 'Finance',
+    url: '#', // Placeholder as there is no direct link for the parent
+    icon: 'payout',
+    isActive: false,
+    superadminOnly: true,
+    items: [
+      {
+        title: 'Payouts',
+        url: '/dashboard/payout',
+        shortcut: ['p', 'y']
+      },
+      {
+        title: 'Ledger',
+        url: '/dashboard/ledger',
+        shortcut: ['l', 'g']
+      },
+      {
+        title: 'Reconciliation',
+        url: '/dashboard/ledger/reconciliation',
+        shortcut: ['r', 'c']
+      },
+      {
+        title: 'Settlements',
+        url: '/dashboard/ledger/settlements',
+        shortcut: ['s', 't']
+      },
+      {
+        title: 'Review Items',
+        url: '/dashboard/ledger/review-items',
+        shortcut: ['r', 'i']
+      },
+      {
+        title: 'Transactions',
+        url: '/dashboard/ledger/transactions',
+        shortcut: ['t', 'x']
+      }
+    ]
   },
 
   {
@@ -114,6 +163,15 @@ export const navItems: NavItem[] = [
     items: [] // No child items
   }
 ];
+
+/** Nav items visible to this role (superadminOnly items are dropped). */
+export function getNavItems(role: string | null | undefined): NavItem[] {
+  const allowed = (item: NavItem) => !item.superadminOnly || isSuperadmin(role);
+  return navItems.filter(allowed).map((item) => ({
+    ...item,
+    items: item.items?.filter(allowed)
+  }));
+}
 
 export interface SaleUser {
   id: number;

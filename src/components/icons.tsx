@@ -36,7 +36,10 @@ import {
   IconHttpQue,
   IconCategory,
   IconStack2,
-  IconCashBanknote
+  IconCashBanknote,
+  IconReceipt,
+  IconTruckDelivery,
+  IconBook
 } from '@tabler/icons-react';
 
 export type Icon = React.ComponentType<IconProps>;
@@ -78,5 +81,8 @@ export const Icons = {
   question: IconHttpQue,
   category: IconCategory,
   collection: IconStack2,
-  payout: IconCashBanknote
+  payout: IconCashBanknote,
+  order: IconReceipt,
+  delivery: IconTruckDelivery,
+  ledger: IconBook
 };
