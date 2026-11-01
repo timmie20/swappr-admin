@@ -1,24 +1,28 @@
 // Types
 export type {
-  Payout,
-  PayoutVendor,
-  PayoutPayment,
-  PayoutOrder,
-  PayoutsResponse,
-  PayoutResponse,
-  RetryPayoutResponse,
-  QueryPayoutsParams,
-  PayoutSortBy,
-  SortOrder
+  PayoutView,
+  AdminPayoutRow,
+  AdminPayoutsResponse,
+  PayoutDetail,
+  PayoutDestination,
+  PayoutVendorSummary,
+  QueryAdminPayoutsParams,
+  MarkPayoutPaidBody
 } from './types/payout.types';
-export { PayoutStatus, PAYOUT_STATUS_OPTIONS } from './types/payout.types';
+export { PayoutStatus, PAYOUT_STATUS_LABEL } from './types/payout.types';
 
 // Hooks
-export { usePayouts, usePayout, useRetryPayout } from './hooks';
+export {
+  usePayouts,
+  usePayout,
+  useApprovePayout,
+  useRejectPayout,
+  useMarkPayoutPaid
+} from './hooks';
 
-// API Service (if needed for server components)
+// API Service
 export { payoutsApi } from './api/payouts.service';
 
 // Components
 export { default as PayoutListingPage } from './components/payout-listing';
-export { default as PayoutDetailPage } from './components/payout-detail-page';
+export { default as PayoutDetailView } from './components/payout-detail-view';

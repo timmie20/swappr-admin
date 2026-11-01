@@ -103,6 +103,84 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.payouts.details(), id] as const
   },
 
+  // Orders
+  orders: {
+    all: () => ['orders'] as const,
+    lists: () => [...queryKeys.orders.all(), 'list'] as const,
+    list: (filters?: unknown) =>
+      [...queryKeys.orders.lists(), filters] as const,
+    details: () => [...queryKeys.orders.all(), 'detail'] as const,
+    detail: (orderNumber: string) =>
+      [...queryKeys.orders.details(), orderNumber] as const
+  },
+
+  // Delivery reviews
+  deliveryReviews: {
+    all: () => ['delivery-reviews'] as const,
+    lists: () => [...queryKeys.deliveryReviews.all(), 'list'] as const,
+    list: (filters?: unknown) =>
+      [...queryKeys.deliveryReviews.lists(), filters] as const
+  },
+
+  // Ledger
+  ledger: {
+    all: () => ['ledger'] as const,
+    summary: () => [...queryKeys.ledger.all(), 'summary'] as const,
+    reconciliation: () =>
+      [...queryKeys.ledger.all(), 'reconciliation'] as const,
+    transactions: (filters?: unknown) =>
+      [...queryKeys.ledger.all(), 'transactions', filters] as const,
+    paystackSettlements: () =>
+      [...queryKeys.ledger.all(), 'paystack-settlements'] as const,
+    syncIssues: (filters?: unknown) =>
+      [...queryKeys.ledger.all(), 'sync-issues', filters] as const
+  },
+
+  // Admin Overview dashboard (one key per section)
+  adminOverview: {
+    all: () => ['admin-overview'] as const,
+    users: () => [...queryKeys.adminOverview.all(), 'users'] as const,
+    vendors: () => [...queryKeys.adminOverview.all(), 'vendors'] as const,
+    marketplace: () =>
+      [...queryKeys.adminOverview.all(), 'marketplace'] as const,
+    finance: () => [...queryKeys.adminOverview.all(), 'finance'] as const,
+    payouts: () => [...queryKeys.adminOverview.all(), 'payouts'] as const,
+    series: (metric: string, range: string) =>
+      [...queryKeys.adminOverview.all(), 'series', metric, range] as const,
+    orderStatusBreakdown: () =>
+      [...queryKeys.adminOverview.all(), 'order-status-breakdown'] as const,
+    recentOrders: (limit: number) =>
+      [...queryKeys.adminOverview.all(), 'recent-orders', limit] as const
+  },
+
+  // Admin vendor accounts
+  adminVendors: {
+    all: () => ['admin-vendors'] as const,
+    list: (params?: unknown) =>
+      [...queryKeys.adminVendors.all(), 'list', params] as const,
+    detail: (vendorId: string) =>
+      [...queryKeys.adminVendors.all(), 'detail', vendorId] as const,
+    orders: (vendorId: string, params?: unknown) =>
+      [...queryKeys.adminVendors.detail(vendorId), 'orders', params] as const,
+    requests: (vendorId: string, params?: unknown) =>
+      [...queryKeys.adminVendors.detail(vendorId), 'requests', params] as const,
+    transactions: (vendorId: string, params?: unknown) =>
+      [
+        ...queryKeys.adminVendors.detail(vendorId),
+        'transactions',
+        params
+      ] as const
+  },
+
+  // Admin customer accounts
+  adminCustomers: {
+    all: () => ['admin-customers'] as const,
+    list: (params?: unknown) =>
+      [...queryKeys.adminCustomers.all(), 'list', params] as const,
+    detail: (customerId: string) =>
+      [...queryKeys.adminCustomers.all(), 'detail', customerId] as const
+  },
+
   // Valuation
   valuation: {
     all: () => ['valuation'] as const,

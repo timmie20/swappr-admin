@@ -1,200 +1,173 @@
+import type { DeliveryConfirmedBy } from '@/features/delivery/types/delivery.types';
+
+// Vendor order payouts are manual: REQUESTED -> APPROVED -> COMPLETED
+// ("paid"), or REJECTED. PENDING / PROCESSING / FAILED belong to the retired
+// Paystack Transfers flow and only appear on historical rows.
 export enum PayoutStatus {
+  REQUESTED = 'requested',
+  APPROVED = 'approved',
+  COMPLETED = 'completed',
+  REJECTED = 'rejected',
   PENDING = 'pending',
   PROCESSING = 'processing',
-  COMPLETED = 'completed',
   FAILED = 'failed'
 }
 
-export interface PayoutVendor {
-  id: string;
-  user_id: string;
-  business_name: string | null;
-  trading_name: string | null;
-  business_address: string | null;
-  state: string | null;
-  city: string | null;
-  contact_number: string | null;
-  rc_number: string | null;
-  store_photos: string[] | null;
-  logo_url: string | null;
-  description: string | null;
-  is_verified: boolean;
-  rating: string;
-  total_trades_completed: number;
-  contact_email: string;
-  onboarding_step:
-    | 'account_created'
-    | 'business_verified'
-    | 'id_verified'
-    | 'profile_completed'
-    | 'approved';
-  onboarding_completed: boolean;
+export const PAYOUT_STATUS_LABEL: Record<PayoutStatus, string> = {
+  [PayoutStatus.REQUESTED]: 'Requested',
+  [PayoutStatus.APPROVED]: 'Approved · awaiting transfer',
+  [PayoutStatus.COMPLETED]: 'Paid',
+  [PayoutStatus.REJECTED]: 'Rejected',
+  [PayoutStatus.PENDING]: 'Pending (legacy)',
+  [PayoutStatus.PROCESSING]: 'Processing (legacy)',
+  [PayoutStatus.FAILED]: 'Failed (legacy)'
+};
+
+export interface PayoutDestination {
   bank_name: string | null;
   bank_code: string | null;
-  account_number: string | null;
   account_name: string | null;
-  paystack_recipient_code: string | null;
-  operating_hours: {
-    days: string[];
-    open_time: string;
-    close_time: string;
-  } | null;
-  landmark: string | null;
-  pickup_enabled: boolean;
-  is_inspection_verified: boolean;
-  inspection_requested_at: string | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
+  account_number_masked?: string | null;
+  /** Full number — superadmin endpoints only */
+  account_number?: string | null;
 }
 
-export interface PayoutPayment {
+/** Amounts are naira */
+export interface PayoutView {
   id: string;
-  payer_id: string;
-  type: 'order_payment' | 'swap_topup';
-  order_id: string | null;
-  swap_request_id: string | null;
-  amount: string;
-  reference: string;
-  paystack_transaction_id: string | null;
-  channel: string | null;
-  status: 'pending' | 'success' | 'failed';
-  paid_at: string | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-}
-
-export interface PayoutOrderItem {
-  id: string;
-  order_id: string;
-  variant_id: string | null;
-  product_id: string;
-  product_name: string;
-  color: string | null;
-  storage: number | null;
-  unit_price: string;
-  quantity: number;
-  subtotal: string;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-}
-
-export interface PayoutOrderDeliveryAddress {
-  phone_number: string;
-  street: string;
-  city: string;
-  state: string;
-  postal_code?: string;
-}
-
-export interface PayoutOrder {
-  id: string;
-  buyer_id: string;
-  vendor_id: string;
-  order_number: string;
-  order_type: 'purchase' | 'swap';
-  status:
-    | 'pending'
-    | 'confirmed'
-    | 'processing'
-    | 'shipped'
-    | 'delivered'
-    | 'cancelled'
-    | 'rejected';
-  payment_status: 'unpaid' | 'paid' | 'refunded';
-  total_amount: string;
-  payout_status: PayoutStatus | null;
-  platform_fee: string | null;
-  vendor_payout_amount: string | null;
-  swap_device_name: string | null;
-  swap_device_condition: string | null;
-  swap_device_images: string[] | null;
-  swap_device_assessed_value: string | null;
-  delivery_address: PayoutOrderDeliveryAddress | null;
-  contact_phone: string;
-  tracking_number: string | null;
-  confirmed_at: string | null;
-  delivered_at: string | null;
-  fulfillment_ready_at: string | null;
-  cancellation_reason: string | null;
-  expires_at: string | null;
-  expiry_job_id: string | null;
-  items: PayoutOrderItem[];
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-}
-
-export interface Payout {
-  id: string;
-  payment_id: string;
   order_id: string | null;
   order_number: string | null;
-  vendor_id: string;
-  paystack_recipient_code: string | null;
-  gross_amount: string;
-  platform_fee: string;
-  net_amount: string;
-  transfer_reference: string;
-  transfer_code: string | null;
   status: PayoutStatus;
-  failure_reason: string | null;
-  retry_count: number;
-  initiated_at: string | null;
-  completed_at: string | null;
+  gross_amount: number | null;
+  platform_fee: number | null;
+  net_amount: number | null;
+  requested_at: string | null;
+  approved_at: string | null;
+  rejected_at: string | null;
+  rejection_reason: string | null;
+  paid_at: string | null;
+  bank_transfer_reference: string | null;
+  /** Superadmin endpoints only. Receipts are private: never a URL. */
+  has_receipt: boolean;
+  receipt: PayoutReceipt | null;
+  /** Snapshot taken at approval; null until then */
+  destination: PayoutDestination | null;
+  narration: string;
   created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-  vendor: PayoutVendor;
-  payment?: PayoutPayment;
-  order?: PayoutOrder | null;
+  requested_by: string | null;
+  approved_by: string | null;
+  rejected_by: string | null;
+  paid_by: string | null;
 }
 
-export interface PayoutsResponse {
+export interface PayoutVendorSummary {
+  id: string;
+  business_name: string | null;
+  trading_name: string | null;
+  contact_number: string | null;
+}
+
+export interface AdminPayoutRow extends PayoutView {
+  vendor: PayoutVendorSummary | null;
+  /** The ledger's operating account holds less than this payout */
+  operating_balance_below_amount: boolean;
+}
+
+export interface AdminPayoutsResponse {
   message: string;
-  payouts: Payout[];
+  payouts: AdminPayoutRow[];
+  operating_account_balance_kobo: number;
   total: number;
   page: number;
   limit: number;
 }
 
-export interface PayoutResponse {
-  message: string;
-  payout: Payout;
+export type ConfirmationSignedIn = 'buyer' | 'other_user' | 'not_signed_in';
+
+export interface DeliveryConfirmationEvidence {
+  confirmed_at: string | null;
+  ip: string | null;
+  user_agent: string | null;
+  signed_in: ConfirmationSignedIn;
+  signed_in_user_id: string | null;
 }
 
-export interface RetryPayoutResponse {
-  message: string;
-  payout_id: string;
+export interface PayoutDetail {
+  payout: PayoutView;
+  vendor: PayoutVendorSummary | null;
+  order: {
+    id: string;
+    order_number: string;
+    status: string;
+    total_amount: number;
+    processing_fee: number | null;
+    platform_fee: number | null;
+    vendor_payout_amount: number | null;
+    delivered_at: string | null;
+    delivery_confirmed_by: DeliveryConfirmedBy | null;
+    delivery_confirmed_by_user_id: string | null;
+    delivery_confirmation_reason: string | null;
+    /** Customer-confirmed orders only. Personal data: this screen only. */
+    delivery_confirmation_evidence: DeliveryConfirmationEvidence | null;
+  } | null;
+  /** The vendor's bank details right now */
+  current_destination: PayoutDestination | null;
+  destination_changed_since_approval: boolean | null;
+  /** All kobo */
+  ledger: {
+    amount_kobo: number;
+    operating_account_balance_kobo: number;
+    operating_balance_below_amount: boolean;
+    vendor_payable_balance_kobo: number;
+    vendor_payable_covers_amount: boolean;
+  };
+  transfer: {
+    narration: string;
+    amount_naira: number;
+    name_check_note: string | null;
+  };
 }
 
-export type PayoutSortBy =
-  | 'created_at'
-  | 'net_amount'
-  | 'status'
-  | 'completed_at';
-
-export type SortOrder = 'ASC' | 'DESC';
-
-export interface QueryPayoutsParams {
+export interface QueryAdminPayoutsParams {
   status?: PayoutStatus;
   vendor_id?: string;
   search?: string;
-  min_amount?: number;
-  max_amount?: number;
-  created_from?: string;
-  created_to?: string;
-  sort_by?: PayoutSortBy;
-  sort_order?: SortOrder;
   page?: number;
   limit?: number;
 }
 
-export const PAYOUT_STATUS_OPTIONS: { label: string; value: PayoutStatus }[] = [
-  { label: 'Pending', value: PayoutStatus.PENDING },
-  { label: 'Processing', value: PayoutStatus.PROCESSING },
-  { label: 'Completed', value: PayoutStatus.COMPLETED },
-  { label: 'Failed', value: PayoutStatus.FAILED }
-];
+export interface MarkPayoutPaidBody {
+  bank_transfer_reference: string;
+  /** From POST /payouts/admin/receipts; attached in the same transaction */
+  receipt_id?: string;
+}
+
+/**
+ * The bank's confirmation (screenshot or PDF), stored privately. Only a
+ * superadmin can upload or view it; it is fetched as a blob with the auth
+ * token — there is no link to it.
+ */
+export interface PayoutReceipt {
+  id: string;
+  content_type: string;
+  bytes: number;
+  original_filename: string | null;
+  uploaded_by: string;
+  uploaded_at: string;
+}
+
+// Checked client-side for a friendlier message; the API decides the type
+// from the file's content, so a renamed file is still refused there
+export const RECEIPT_FILE = {
+  maxBytes: 5 * 1024 * 1024,
+  types: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+  accept: 'image/jpeg,image/png,image/webp,application/pdf'
+} as const;
+
+export const REJECT_REASON = { min: 5, max: 500 } as const;
+export const BANK_REFERENCE = {
+  min: 4,
+  max: 100,
+  // Same rule as the API (letters, digits, space and - _ / . :)
+  pattern: /^[A-Za-z0-9][A-Za-z0-9 _\-/.:]*$/
+} as const;

@@ -1,7 +1,6 @@
 import PageContainer from '@/components/layout/page-container';
-import PayoutDetailSkeleton from '@/components/skeletons/payout-detail-skeleton';
-import PayoutDetailPage from '@/features/payouts/components/payout-detail-page';
-import { Suspense } from 'react';
+import SuperadminGate from '@/components/layout/superadmin-gate';
+import PayoutDetailView from '@/features/payouts/components/payout-detail-view';
 
 export const metadata = {
   title: 'Dashboard: Payout Details'
@@ -14,9 +13,9 @@ export default async function Page(props: PageProps) {
   return (
     <PageContainer scrollable>
       <div className='flex-1 space-y-4'>
-        <Suspense fallback={<PayoutDetailSkeleton />}>
-          <PayoutDetailPage payoutId={params.payoutId} />
-        </Suspense>
+        <SuperadminGate>
+          <PayoutDetailView payoutId={params.payoutId} />
+        </SuperadminGate>
       </div>
     </PageContainer>
   );
