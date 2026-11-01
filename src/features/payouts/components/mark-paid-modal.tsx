@@ -10,12 +10,15 @@ import { Label } from '@/components/ui/label';
 import { Modal } from '@/components/ui/modal';
 import { getApiError } from '@/lib/api/errors';
 import { formatNaira } from '@/lib/format';
-import { uploadImage } from '@/lib/upload-service';
 import { IconAlertTriangle, IconBan } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import { useMarkPayoutPaid } from '../hooks/use-payouts';
-import { BANK_REFERENCE, PayoutDetail } from '../types/payout.types';
+import {
+  BANK_REFERENCE,
+  PayoutDetail,
+  PayoutReceipt
+} from '../types/payout.types';
+import { ReceiptPicker } from './receipt-picker';
 
 interface MarkPaidModalProps {
   detail: PayoutDetail;
@@ -34,15 +37,11 @@ function validateReference(value: string): string | null {
   return null;
 }
 
-function validateReceiptUrl(value: string): string | null {
-  if (!value.trim()) return null;
-  try {
-    const url = new URL(value.trim());
-    return url.protocol === 'https:' ? null : 'Must be an https:// link';
-  } catch {
-    return 'Not a valid link';
-  }
-}
+// The receipt can't be used for this payout: upload the file again
+const RECEIPT_UNUSABLE_CODES = new Set([
+  'receipt_not_found',
+  'receipt_already_attached'
+]);
 
 export function MarkPaidModal({ detail, isOpen, onClose }: MarkPaidModalProps) {
   const { payout, transfer } = detail;
@@ -50,7 +49,9 @@ export function MarkPaidModal({ detail, isOpen, onClose }: MarkPaidModalProps) {
   const markPaid = useMarkPayoutPaid();
 
   const [reference, setReference] = useState('');
-  const [receiptUrl, setReceiptUrl] = useState('');
+  // Kept across a failed submit (e.g. reference_already_used) so a retry
+  // doesn't upload the file again
+  const [receipt, setReceipt] = useState<PayoutReceipt | null>(null);
   const [uploading, setUploading] = useState(false);
   const [sentConfirmed, setSentConfirmed] = useState(false);
   const [touched, setTouched] = useState(false);
@@ -58,7 +59,7 @@ export function MarkPaidModal({ detail, isOpen, onClose }: MarkPaidModalProps) {
   useEffect(() => {
     if (!isOpen) {
       setReference('');
-      setReceiptUrl('');
+      setReceipt(null);
       setSentConfirmed(false);
       setTouched(false);
       markPaid.reset();
@@ -67,26 +68,12 @@ export function MarkPaidModal({ detail, isOpen, onClose }: MarkPaidModalProps) {
   }, [isOpen]);
 
   const referenceError = validateReference(reference);
-  const receiptError = validateReceiptUrl(receiptUrl);
   const apiError = markPaid.error ? getApiError(markPaid.error) : null;
   const blocked =
     apiError?.code === 'vendor_payable_insufficient' ||
     !detail.ledger.vendor_payable_covers_amount;
   const busy = markPaid.isPending || uploading;
-  const canSubmit =
-    !referenceError && !receiptError && sentConfirmed && !blocked && !busy;
-
-  const onUpload = async (file: File) => {
-    setUploading(true);
-    try {
-      const { url } = await uploadImage(file, 'payout-receipts');
-      setReceiptUrl(url);
-    } catch (error) {
-      toast.error(getApiError(error, 'Receipt upload failed').message);
-    } finally {
-      setUploading(false);
-    }
-  };
+  const canSubmit = !referenceError && sentConfirmed && !blocked && !busy;
 
   const onSubmit = () => {
     setTouched(true);
@@ -96,10 +83,16 @@ export function MarkPaidModal({ detail, isOpen, onClose }: MarkPaidModalProps) {
         id: payout.id,
         body: {
           bank_transfer_reference: reference.trim(),
-          ...(receiptUrl.trim() ? { receipt_url: receiptUrl.trim() } : {})
+          ...(receipt ? { receipt_id: receipt.id } : {})
         }
       },
-      { onSuccess: onClose }
+      {
+        onSuccess: onClose,
+        onError: (error) => {
+          const { code } = getApiError(error);
+          if (code && RECEIPT_UNUSABLE_CODES.has(code)) setReceipt(null);
+        }
+      }
     );
   };
 
@@ -177,45 +170,17 @@ export function MarkPaidModal({ detail, isOpen, onClose }: MarkPaidModalProps) {
         </div>
 
         <div className='space-y-2'>
-          <Label htmlFor='receipt-url'>Receipt (optional)</Label>
-          <div className='flex gap-2'>
-            <Input
-              id='receipt-url'
-              value={receiptUrl}
-              onChange={(event) => setReceiptUrl(event.target.value)}
-              placeholder='https://…'
-              disabled={busy || blocked}
-            />
-            <Button
-              type='button'
-              variant='outline'
-              disabled={busy || blocked}
-              asChild
-            >
-              <label className='cursor-pointer'>
-                {uploading ? (
-                  <Icons.spinner className='h-4 w-4 animate-spin' />
-                ) : (
-                  'Upload'
-                )}
-                <input
-                  type='file'
-                  accept='image/jpeg,image/png,image/webp'
-                  className='hidden'
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    event.target.value = '';
-                    if (file) void onUpload(file);
-                  }}
-                />
-              </label>
-            </Button>
-          </div>
-          <p className='text-muted-foreground text-xs'>
-            Upload a screenshot (JPG, PNG or WebP) or paste an https link.
-          </p>
-          {receiptError && (
-            <p className='text-destructive text-xs'>{receiptError}</p>
+          <Label>Receipt (optional)</Label>
+          <ReceiptPicker
+            receipt={receipt}
+            onChange={setReceipt}
+            onUploadingChange={setUploading}
+            disabled={markPaid.isPending || blocked}
+          />
+          {apiError?.code && RECEIPT_UNUSABLE_CODES.has(apiError.code) && (
+            <p className='text-destructive text-xs'>
+              {apiError.message} Choose the file again to upload a fresh copy.
+            </p>
           )}
         </div>
 
@@ -235,7 +200,8 @@ export function MarkPaidModal({ detail, isOpen, onClose }: MarkPaidModalProps) {
 
         {apiError &&
           apiError.code !== 'vendor_payable_insufficient' &&
-          apiError.code !== 'reference_already_used' && (
+          apiError.code !== 'reference_already_used' &&
+          !(apiError.code && RECEIPT_UNUSABLE_CODES.has(apiError.code)) && (
             <Alert variant='destructive'>
               <IconAlertTriangle />
               <AlertDescription>{apiError.message}</AlertDescription>

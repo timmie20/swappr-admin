@@ -47,7 +47,9 @@ export interface PayoutView {
   rejection_reason: string | null;
   paid_at: string | null;
   bank_transfer_reference: string | null;
-  receipt_url: string | null;
+  /** Superadmin endpoints only. Receipts are private: never a URL. */
+  has_receipt: boolean;
+  receipt: PayoutReceipt | null;
   /** Snapshot taken at approval; null until then */
   destination: PayoutDestination | null;
   narration: string;
@@ -136,8 +138,31 @@ export interface QueryAdminPayoutsParams {
 
 export interface MarkPayoutPaidBody {
   bank_transfer_reference: string;
-  receipt_url?: string;
+  /** From POST /payouts/admin/receipts; attached in the same transaction */
+  receipt_id?: string;
 }
+
+/**
+ * The bank's confirmation (screenshot or PDF), stored privately. Only a
+ * superadmin can upload or view it; it is fetched as a blob with the auth
+ * token — there is no link to it.
+ */
+export interface PayoutReceipt {
+  id: string;
+  content_type: string;
+  bytes: number;
+  original_filename: string | null;
+  uploaded_by: string;
+  uploaded_at: string;
+}
+
+// Checked client-side for a friendlier message; the API decides the type
+// from the file's content, so a renamed file is still refused there
+export const RECEIPT_FILE = {
+  maxBytes: 5 * 1024 * 1024,
+  types: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+  accept: 'image/jpeg,image/png,image/webp,application/pdf'
+} as const;
 
 export const REJECT_REASON = { min: 5, max: 500 } as const;
 export const BANK_REFERENCE = {

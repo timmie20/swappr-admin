@@ -127,3 +127,37 @@ export function useMarkPayoutPaid() {
     }
   });
 }
+
+/**
+ * Upload a receipt file. Errors are left to the caller (shown next to the
+ * file picker). The file itself is never cached — see ReceiptViewer.
+ */
+export function useUploadReceipt() {
+  return useMutation({
+    mutationFn: (file: File) => payoutsApi.uploadReceipt(file)
+  });
+}
+
+// The payout moved on, or the receipt can't be used: refetch
+const RECEIPT_STALE_CODES = new Set(['payout_not_paid', 'payout_has_receipt']);
+
+/**
+ * Attach a receipt to a paid payout that has none. Errors are left to the
+ * caller so the dialog can show them inline.
+ */
+export function useAttachReceipt() {
+  const invalidate = useInvalidatePayout();
+
+  return useMutation({
+    mutationFn: ({ id, receiptId }: { id: string; receiptId: string }) =>
+      payoutsApi.attachReceipt(id, receiptId),
+    onSuccess: (_data, { id }) => {
+      invalidate(id);
+      toast.success('Receipt attached');
+    },
+    onError: (error, { id }) => {
+      const { code } = getApiError(error);
+      if (code && RECEIPT_STALE_CODES.has(code)) invalidate(id);
+    }
+  });
+}

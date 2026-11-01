@@ -26,6 +26,8 @@ import {
   IconBan,
   IconCheck,
   IconCash,
+  IconFileText,
+  IconPaperclip,
   IconX
 } from '@tabler/icons-react';
 import Link from 'next/link';
@@ -42,7 +44,9 @@ import {
   PayoutStatus,
   REJECT_REASON
 } from '../types/payout.types';
+import { AddReceiptModal } from './add-receipt-modal';
 import { MarkPaidModal } from './mark-paid-modal';
+import { ReceiptViewer } from './receipt-viewer';
 import { PayoutStatusBadge } from './payout-status-badge';
 
 const AMBER_ALERT =
@@ -154,6 +158,8 @@ export default function PayoutDetailView({ payoutId }: { payoutId: string }) {
   const [approveOpen, setApproveOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [markPaidOpen, setMarkPaidOpen] = useState(false);
+  const [receiptViewOpen, setReceiptViewOpen] = useState(false);
+  const [addReceiptOpen, setAddReceiptOpen] = useState(false);
 
   if (error) {
     return <QueryErrorState error={error} title='Could not load this payout' />;
@@ -164,6 +170,7 @@ export default function PayoutDetailView({ payoutId }: { payoutId: string }) {
   const isRequested = payout.status === PayoutStatus.REQUESTED;
   const isApproved = payout.status === PayoutStatus.APPROVED;
   const isOpenPayout = isRequested || isApproved;
+  const isPaid = payout.status === PayoutStatus.COMPLETED;
   const payableShort = isOpenPayout && !ledger.vendor_payable_covers_amount;
   const evidence = order?.delivery_confirmation_evidence ?? null;
 
@@ -195,6 +202,21 @@ export default function PayoutDetailView({ payoutId }: { payoutId: string }) {
           detail={detail}
           isOpen={approveOpen}
           onClose={() => setApproveOpen(false)}
+        />
+      )}
+      {payout.receipt && (
+        <ReceiptViewer
+          payoutId={payout.id}
+          receipt={payout.receipt}
+          isOpen={receiptViewOpen}
+          onClose={() => setReceiptViewOpen(false)}
+        />
+      )}
+      {isPaid && !payout.has_receipt && (
+        <AddReceiptModal
+          payoutId={payout.id}
+          isOpen={addReceiptOpen}
+          onClose={() => setAddReceiptOpen(false)}
         />
       )}
       {isApproved && (
@@ -574,15 +596,22 @@ export default function PayoutDetailView({ payoutId }: { payoutId: string }) {
               <DetailRow
                 label='Receipt'
                 value={
-                  payout.receipt_url ? (
-                    <a
-                      href={payout.receipt_url}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                      className='underline'
+                  payout.receipt ? (
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={() => setReceiptViewOpen(true)}
                     >
-                      Open receipt
-                    </a>
+                      <IconFileText className='mr-1 h-4 w-4' /> View receipt
+                    </Button>
+                  ) : isPaid ? (
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={() => setAddReceiptOpen(true)}
+                    >
+                      <IconPaperclip className='mr-1 h-4 w-4' /> Add receipt
+                    </Button>
                   ) : undefined
                 }
               />

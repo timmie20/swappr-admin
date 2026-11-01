@@ -136,6 +136,51 @@ export const queryKeys = {
       [...queryKeys.ledger.all(), 'sync-issues', filters] as const
   },
 
+  // Admin Overview dashboard (one key per section)
+  adminOverview: {
+    all: () => ['admin-overview'] as const,
+    users: () => [...queryKeys.adminOverview.all(), 'users'] as const,
+    vendors: () => [...queryKeys.adminOverview.all(), 'vendors'] as const,
+    marketplace: () =>
+      [...queryKeys.adminOverview.all(), 'marketplace'] as const,
+    finance: () => [...queryKeys.adminOverview.all(), 'finance'] as const,
+    payouts: () => [...queryKeys.adminOverview.all(), 'payouts'] as const,
+    series: (metric: string, range: string) =>
+      [...queryKeys.adminOverview.all(), 'series', metric, range] as const,
+    orderStatusBreakdown: () =>
+      [...queryKeys.adminOverview.all(), 'order-status-breakdown'] as const,
+    recentOrders: (limit: number) =>
+      [...queryKeys.adminOverview.all(), 'recent-orders', limit] as const
+  },
+
+  // Admin vendor accounts
+  adminVendors: {
+    all: () => ['admin-vendors'] as const,
+    list: (params?: unknown) =>
+      [...queryKeys.adminVendors.all(), 'list', params] as const,
+    detail: (vendorId: string) =>
+      [...queryKeys.adminVendors.all(), 'detail', vendorId] as const,
+    orders: (vendorId: string, params?: unknown) =>
+      [...queryKeys.adminVendors.detail(vendorId), 'orders', params] as const,
+    requests: (vendorId: string, params?: unknown) =>
+      [...queryKeys.adminVendors.detail(vendorId), 'requests', params] as const,
+    transactions: (vendorId: string, params?: unknown) =>
+      [
+        ...queryKeys.adminVendors.detail(vendorId),
+        'transactions',
+        params
+      ] as const
+  },
+
+  // Admin customer accounts
+  adminCustomers: {
+    all: () => ['admin-customers'] as const,
+    list: (params?: unknown) =>
+      [...queryKeys.adminCustomers.all(), 'list', params] as const,
+    detail: (customerId: string) =>
+      [...queryKeys.adminCustomers.all(), 'detail', customerId] as const
+  },
+
   // Valuation
   valuation: {
     all: () => ['valuation'] as const,

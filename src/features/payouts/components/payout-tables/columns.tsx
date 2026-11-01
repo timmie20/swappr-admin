@@ -1,5 +1,6 @@
 'use client';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -8,7 +9,7 @@ import {
 } from '@/components/ui/tooltip';
 import { formatLagosDateTime, formatNaira } from '@/lib/format';
 import { ColumnDef } from '@tanstack/react-table';
-import { IconAlertTriangle, IconEye } from '@tabler/icons-react';
+import { IconAlertTriangle, IconEye, IconPaperclip } from '@tabler/icons-react';
 import Link from 'next/link';
 import { AdminPayoutRow, PayoutStatus } from '../../types/payout.types';
 import { PayoutStatusBadge } from '../payout-status-badge';
@@ -90,7 +91,16 @@ export const columns: ColumnDef<AdminPayoutRow>[] = [
   {
     id: 'status',
     header: 'STATUS',
-    cell: ({ row }) => <PayoutStatusBadge status={row.original.status} />
+    cell: ({ row }) => (
+      <div className='flex items-center gap-1.5'>
+        <PayoutStatusBadge status={row.original.status} />
+        {row.original.has_receipt && (
+          <Badge variant='outline' className='gap-1'>
+            <IconPaperclip /> Receipt
+          </Badge>
+        )}
+      </div>
+    )
   },
   {
     id: 'reference',
