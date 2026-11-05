@@ -19,13 +19,24 @@ import {
 } from 'nuqs';
 import { useAdminVendor } from '../hooks/use-vendors';
 import { vendorDisplayName } from '../types/vendor.types';
-import { OnboardingStepBadge, VendorStatusBadges } from './vendor-badges';
+import {
+  OnboardingStepBadge,
+  TierBadge,
+  VendorStatusBadges
+} from './vendor-badges';
+import { VendorHistoryTab } from './vendor-history-tab';
 import { VendorOrdersTab } from './vendor-orders-tab';
 import { VendorOverviewTab } from './vendor-overview-tab';
 import { VendorRequestsTab } from './vendor-requests-tab';
 import { VendorTransactionsTab } from './vendor-transactions-tab';
 
-const TABS = ['overview', 'orders', 'requests', 'transactions'] as const;
+const TABS = [
+  'overview',
+  'orders',
+  'requests',
+  'history',
+  'transactions'
+] as const;
 type VendorTab = (typeof TABS)[number];
 
 function TabCount({ count }: { count: number }) {
@@ -100,6 +111,7 @@ export default function VendorDetailView({
                 {vendorDisplayName(vendor)}
               </h2>
               <div className='flex flex-wrap items-center gap-1.5'>
+                <TierBadge tier={vendor.tier} />
                 <OnboardingStepBadge step={vendor.onboarding_step} />
                 <VendorStatusBadges vendor={vendor} />
               </div>
@@ -148,6 +160,7 @@ export default function VendorDetailView({
             Requests
             <TabCount count={overview?.activity.requests.total_open ?? 0} />
           </TabsTrigger>
+          <TabsTrigger value='history'>History</TabsTrigger>
           {isSuperadmin && (
             <TabsTrigger value='transactions'>Transactions</TabsTrigger>
           )}
@@ -177,6 +190,9 @@ export default function VendorDetailView({
         </TabsContent>
         <TabsContent value='requests' className='mt-4'>
           <VendorRequestsTab vendorId={vendorId} isSuperadmin={isSuperadmin} />
+        </TabsContent>
+        <TabsContent value='history' className='mt-4'>
+          <VendorHistoryTab vendorId={vendorId} />
         </TabsContent>
         {isSuperadmin && (
           <TabsContent value='transactions' className='mt-4'>

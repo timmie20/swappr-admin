@@ -123,7 +123,7 @@ export function VendorsSection({
         {
           label: 'Onboarding In Progress',
           value: n(d.onboarding_in_progress),
-          sublabel: 'Before profile complete',
+          sublabel: 'Not yet approved',
           href: '/dashboard/vendors?tab=onboarding'
         },
         {

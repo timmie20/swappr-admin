@@ -47,6 +47,8 @@ function useInvalidatePayout() {
     queryClient.invalidateQueries({ queryKey: queryKeys.payouts.detail(id) });
     queryClient.invalidateQueries({ queryKey: queryKeys.ledger.all() });
     queryClient.invalidateQueries({ queryKey: queryKeys.orders.all() });
+    // These actions are recorded in the audit log
+    queryClient.invalidateQueries({ queryKey: queryKeys.adminAudit.all() });
   };
 }
 

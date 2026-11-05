@@ -17,10 +17,24 @@ export type OnboardingStep =
   | 'account_created'
   | 'business_verified'
   | 'id_verified'
-  | 'profile_completed' // in the enum; nothing sets it yet
+  | 'profile_completed' // between profile and KYC
   | 'approved';
 
 export type PaymentStatus = 'unpaid' | 'paid' | 'refunded';
+
+/**
+ * Worked out by the backend from stored facts (there is no tier column):
+ * 0 = not active (missing email/KYC/profile, or suspended);
+ * 1 = ID-verified, up to 10 listings; 2 = also CAC-verified, no limit.
+ */
+export type VendorTier = 0 | 1 | 2;
+export type VendorBadge =
+  | 'id_verified'
+  | 'verified_business'
+  | 'swappr_inspected';
+export type IdFailureReason = 'mismatch' | 'not_found' | 'provider_error';
+/** prembly = the automatic check; admin_override = set by an admin */
+export type VerifiedVia = 'prembly' | 'admin_override';
 
 export interface AdminVendorRow {
   id: string;
@@ -40,6 +54,9 @@ export interface AdminVendorRow {
   pickup_enabled: boolean;
   rating: number;
   created_at: string;
+  tier: VendorTier;
+  badges: VendorBadge[];
+  suspended_at: string | null;
   owner: {
     user_id: string;
     name: string | null;
@@ -71,6 +88,8 @@ export interface QueryAdminVendorsParams {
   inspection?: InspectionFilter;
   is_verified?: boolean;
   state?: string;
+  tier?: VendorTier;
+  suspended?: boolean;
   sort_by?: VendorSort;
   sort_order?: SortOrder;
   page?: number;
@@ -94,6 +113,18 @@ export interface AdminVendorFinance {
 }
 
 export type VerificationStatus = 'pending' | 'verified' | 'rejected';
+/**
+ * awaiting_confirmation: Prembly matched, and the vendor hasn't confirmed or
+ * declined the business yet. They stay Tier 1 until they confirm.
+ */
+export type CacStatus = VerificationStatus | 'awaiting_confirmation';
+
+export const CAC_STATUS_LABEL: Record<CacStatus, string> = {
+  pending: 'Pending',
+  verified: 'Verified',
+  rejected: 'Rejected',
+  awaiting_confirmation: 'Awaiting vendor confirmation'
+};
 
 export interface AdminVendorOverview {
   vendor: {
@@ -124,6 +155,10 @@ export interface AdminVendorOverview {
     inspection_requested_at: string | null;
     pickup_enabled: boolean;
     created_at: string;
+    tier: VendorTier;
+    badges: VendorBadge[];
+    suspended_at: string | null;
+    suspension_reason: string | null;
   };
   owner: {
     user_id: string;
@@ -137,13 +172,20 @@ export interface AdminVendorOverview {
   };
   /** Statuses only. null = no verification record yet */
   verification: {
-    cac_status: VerificationStatus;
+    cac_status: CacStatus;
     cac_verified_at: string | null;
     cac_rejection_reason: string | null;
     id_type: 'NIN' | 'BVN' | null;
     id_status: VerificationStatus;
     id_verified_at: string | null;
     id_rejection_reason: string | null;
+    id_failure_reason: IdFailureReason | null;
+    id_verified_via: VerifiedVia | null;
+    cac_verified_via: VerifiedVia | null;
+    /** CAC lookups used */
+    cac_attempts: number | null;
+    /** The retry limit (server config, 2 by default) */
+    cac_max_attempts: number;
     verification_score: number;
   } | null;
   /** Masked. null = no bank account added */
@@ -272,3 +314,53 @@ export const vendorDisplayName = (v: {
   business_name: string | null;
   contact_email: string;
 }) => v.trading_name || v.business_name || v.contact_email;
+
+export const TIER_LABEL: Record<VendorTier, string> = {
+  0: 'Tier 0 · inactive',
+  1: 'Tier 1',
+  2: 'Tier 2'
+};
+
+export const TIER_HELP: Record<VendorTier, string> = {
+  0: 'Not active: missing email verification, KYC or profile, or suspended',
+  1: 'ID-verified · up to 10 listings',
+  2: 'ID and business (CAC) verified · no listing limit'
+};
+
+export const BADGE_LABEL: Record<VendorBadge, string> = {
+  id_verified: 'ID verified',
+  verified_business: 'Verified business',
+  swappr_inspected: 'Swappr inspected'
+};
+
+export const ID_FAILURE_LABEL: Record<IdFailureReason, string> = {
+  mismatch: 'Details didn’t match',
+  not_found: 'Not found',
+  provider_error: 'Provider error'
+};
+
+// The status history now lives in the audit log: see
+// features/admin-audit/types/audit.types.ts
+
+// ── Admin actions ─────────────────────────────────────────────────────
+// Every action needs a reason (non-empty, max 500) and is audited
+
+export const ACTION_REASON_MAX = 500;
+export type CompanyType = 'RC' | 'BN' | 'IT';
+export type IdType = 'BVN' | 'NIN';
+
+export type VendorAction =
+  | { kind: 'verify_email' }
+  | { kind: 'verify_id'; id_type: IdType }
+  | {
+      kind: 'verify_cac';
+      rc_number: string;
+      company_type: CompanyType;
+      business_name?: string;
+    }
+  | { kind: 'reset_cac_attempts' }
+  | { kind: 'revoke_business' }
+  | { kind: 'suspend' }
+  | { kind: 'unsuspend' };
+
+export type VendorActionKind = VendorAction['kind'];

@@ -24,6 +24,8 @@ function useInvalidateDelivery() {
       queryKey: queryKeys.deliveryReviews.all()
     });
     queryClient.invalidateQueries({ queryKey: queryKeys.orders.all() });
+    // These actions are recorded in the audit log
+    queryClient.invalidateQueries({ queryKey: queryKeys.adminAudit.all() });
   };
 }
 

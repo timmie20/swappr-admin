@@ -7,7 +7,11 @@ import { formatLagosDateTime } from '@/lib/format';
 import { Column, ColumnDef } from '@tanstack/react-table';
 import Link from 'next/link';
 import { AdminVendorRow, vendorDisplayName } from '../../types/vendor.types';
-import { OnboardingStepBadge, VendorStatusBadges } from '../vendor-badges';
+import {
+  OnboardingStepBadge,
+  TierBadge,
+  VendorStatusBadges
+} from '../vendor-badges';
 
 const n = (value: number) => value.toLocaleString('en-NG');
 
@@ -58,6 +62,11 @@ export const columns: ColumnDef<AdminVendorRow>[] = [
     header: 'LOCATION',
     cell: ({ row }) =>
       [row.original.city, row.original.state].filter(Boolean).join(', ') || '—'
+  },
+  {
+    id: 'tier',
+    header: 'TIER',
+    cell: ({ row }) => <TierBadge tier={row.original.tier} />
   },
   {
     id: 'onboarding_step',

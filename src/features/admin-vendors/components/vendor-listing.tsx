@@ -27,7 +27,8 @@ import { useAdminVendors } from '../hooks/use-vendors';
 import {
   AdminVendorRow,
   QueryAdminVendorsParams,
-  VendorSort
+  VendorSort,
+  VendorTier
 } from '../types/vendor.types';
 import { columns } from './vendor-tables/columns';
 
@@ -54,6 +55,8 @@ const PRESETS = {
 type Preset = keyof typeof PRESETS;
 const PRESET_KEYS = Object.keys(PRESETS) as Preset[];
 const VERIFIED_VALUES = ['any', 'true', 'false'] as const;
+const TIER_VALUES = ['any', '0', '1', '2'] as const;
+const SUSPENDED_VALUES = ['any', 'true', 'false'] as const;
 
 function VendorTable({
   data,
@@ -88,6 +91,14 @@ export default function VendorListing() {
     'verified',
     parseAsStringEnum([...VERIFIED_VALUES]).withDefault('any')
   );
+  const [tier, setTier] = useQueryState(
+    'tier',
+    parseAsStringEnum([...TIER_VALUES]).withDefault('any')
+  );
+  const [suspended, setSuspended] = useQueryState(
+    'suspended',
+    parseAsStringEnum([...SUSPENDED_VALUES]).withDefault('any')
+  );
 
   const [searchInput, setSearchInput] = useState(search ?? '');
   const [stateInput, setStateInput] = useState(stateFilter ?? '');
@@ -113,6 +124,8 @@ export default function VendorListing() {
     search: search ?? undefined,
     state: stateFilter ?? undefined,
     is_verified: verified === 'any' ? undefined : verified === 'true',
+    tier: tier === 'any' ? undefined : (Number(tier) as VendorTier),
+    suspended: suspended === 'any' ? undefined : suspended === 'true',
     page,
     limit: perPage
   };
@@ -122,12 +135,20 @@ export default function VendorListing() {
   // Owner decision: a tab shows its count only once it has been opened.
   // Counts depend on the filters, so they reset when a filter changes.
   const [counts, setCounts] = useState<Partial<Record<Preset, number>>>({});
-  useEffect(() => setCounts({}), [search, stateFilter, verified]);
+  useEffect(
+    () => setCounts({}),
+    [search, stateFilter, verified, tier, suspended]
+  );
   useEffect(() => {
     if (data && !isFetching) setCounts((c) => ({ ...c, [tab]: data.total }));
   }, [data, isFetching, tab]);
 
-  const isFiltered = !!search || !!stateFilter || verified !== 'any';
+  const isFiltered =
+    !!search ||
+    !!stateFilter ||
+    verified !== 'any' ||
+    tier !== 'any' ||
+    suspended !== 'any';
 
   return (
     <div className='flex flex-1 flex-col space-y-4'>
@@ -196,6 +217,45 @@ export default function VendorListing() {
             </SelectContent>
           </Select>
         </div>
+        <div className='flex flex-col gap-1.5'>
+          <span className='text-muted-foreground text-xs'>Tier</span>
+          <Select
+            value={tier}
+            onValueChange={(value) => {
+              void setPage(1);
+              void setTier(value as (typeof TIER_VALUES)[number]);
+            }}
+          >
+            <SelectTrigger size='sm' className='w-[150px]'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='any'>Any tier</SelectItem>
+              <SelectItem value='0'>Tier 0 · inactive</SelectItem>
+              <SelectItem value='1'>Tier 1</SelectItem>
+              <SelectItem value='2'>Tier 2</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className='flex flex-col gap-1.5'>
+          <span className='text-muted-foreground text-xs'>Suspended</span>
+          <Select
+            value={suspended}
+            onValueChange={(value) => {
+              void setPage(1);
+              void setSuspended(value as (typeof SUSPENDED_VALUES)[number]);
+            }}
+          >
+            <SelectTrigger size='sm' className='w-[140px]'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='any'>Any</SelectItem>
+              <SelectItem value='true'>Suspended</SelectItem>
+              <SelectItem value='false'>Not suspended</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         {isFiltered && (
           <Button
             variant='outline'
@@ -207,6 +267,8 @@ export default function VendorListing() {
               void setSearch(null);
               void setStateFilter(null);
               void setVerified('any');
+              void setTier('any');
+              void setSuspended('any');
             }}
           >
             Reset filters

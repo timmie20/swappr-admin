@@ -169,7 +169,17 @@ export const queryKeys = {
         ...queryKeys.adminVendors.detail(vendorId),
         'transactions',
         params
-      ] as const
+      ] as const,
+    history: (vendorId: string, params?: unknown) =>
+      [...queryKeys.adminVendors.detail(vendorId), 'history', params] as const
+  },
+
+  // Audit log (admin actions + vendor standing)
+  adminAudit: {
+    all: () => ['admin-audit'] as const,
+    list: (params?: unknown) =>
+      [...queryKeys.adminAudit.all(), 'list', params] as const,
+    catalogue: () => [...queryKeys.adminAudit.all(), 'catalogue'] as const
   },
 
   // Admin customer accounts
