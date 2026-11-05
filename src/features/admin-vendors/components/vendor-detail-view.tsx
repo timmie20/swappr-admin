@@ -17,6 +17,7 @@ import {
   useQueryState,
   useQueryStates
 } from 'nuqs';
+import AdminProductListing from '@/features/admin-products/components/admin-product-listing';
 import { useAdminVendor } from '../hooks/use-vendors';
 import { vendorDisplayName } from '../types/vendor.types';
 import {
@@ -32,6 +33,7 @@ import { VendorTransactionsTab } from './vendor-transactions-tab';
 
 const TABS = [
   'overview',
+  'products',
   'orders',
   'requests',
   'history',
@@ -65,7 +67,8 @@ export default function VendorDetailView({
   );
   const [, setTabParams] = useQueryStates({
     page: parseAsInteger,
-    search: parseAsString
+    search: parseAsString,
+    sort: parseAsString
   });
   const query = useAdminVendor(vendorId);
   // Transactions is superadmin only; an admin landing on ?tab=transactions
@@ -146,12 +149,13 @@ export default function VendorDetailView({
         onValueChange={(value) => {
           // The tab tables share the URL's page/search params: start each
           // tab fresh
-          void setTabParams({ page: null, search: null });
+          void setTabParams({ page: null, search: null, sort: null });
           void setTab(value as VendorTab);
         }}
       >
         <TabsList>
           <TabsTrigger value='overview'>Overview</TabsTrigger>
+          <TabsTrigger value='products'>Products</TabsTrigger>
           <TabsTrigger value='orders'>
             Orders
             <TabCount count={overview?.activity.orders.needs_action ?? 0} />
@@ -181,6 +185,9 @@ export default function VendorDetailView({
               isSuperadmin={isSuperadmin}
             />
           )}
+        </TabsContent>
+        <TabsContent value='products' className='mt-4'>
+          <AdminProductListing vendorId={vendorId} />
         </TabsContent>
         <TabsContent value='orders' className='mt-4'>
           <VendorOrdersTab

@@ -119,6 +119,7 @@ export const EVENT_LABEL: Record<string, string> = {
   product_published: 'Product published',
   product_unpublished: 'Product unpublished',
   product_archived: 'Product archived',
+  product_restored: 'Listing restored',
   product_deleted: 'Product deleted',
   // delivery
   delivery_confirmed_by_admin: 'Delivery confirmed by admin',

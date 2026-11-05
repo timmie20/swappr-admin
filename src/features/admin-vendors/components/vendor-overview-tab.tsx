@@ -262,7 +262,8 @@ export function VendorOverviewTab({
     {
       label: 'Active Listings',
       value: n(activity.listings.active),
-      sublabel: `${n(activity.listings.out_of_stock)} out of stock · ${n(activity.listings.unpublished)} unpublished`
+      sublabel: `${n(activity.listings.out_of_stock)} out of stock · ${n(activity.listings.unpublished)} unpublished`,
+      href: `${base}?tab=products`
     },
     {
       label: 'Needs Action',

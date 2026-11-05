@@ -43,6 +43,7 @@ const METADATA_LABEL: Record<string, string> = {
   fields: 'Fields changed',
   rejection_category: 'Rejection category',
   bulk: 'Bulk action',
+  removed_from_carts: 'Removed from carts',
   net_amount_kobo: 'Net amount',
   amount_kobo: 'Amount',
   destination_account_last4: 'Paid to account',

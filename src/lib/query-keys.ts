@@ -182,6 +182,15 @@ export const queryKeys = {
     catalogue: () => [...queryKeys.adminAudit.all(), 'catalogue'] as const
   },
 
+  // Admin product views (every listing, any state)
+  adminProducts: {
+    all: () => ['admin-products'] as const,
+    list: (params?: unknown) =>
+      [...queryKeys.adminProducts.all(), 'list', params] as const,
+    detail: (productId: string) =>
+      [...queryKeys.adminProducts.all(), 'detail', productId] as const
+  },
+
   // Admin customer accounts
   adminCustomers: {
     all: () => ['admin-customers'] as const,
