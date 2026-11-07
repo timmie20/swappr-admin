@@ -6,7 +6,7 @@ import {
   VendorTier
 } from '@/features/admin-vendors/types/vendor.types';
 import { transactionHref } from '@/features/ledger/components/ledger-links';
-import { formatKobo, formatLagosDateTime } from '@/lib/format';
+import { formatBps, formatKobo, formatLagosDateTime } from '@/lib/format';
 import { ColumnDef } from '@tanstack/react-table';
 import Link from 'next/link';
 import {
@@ -108,22 +108,99 @@ function MetadataValue({ k, value }: { k: string; value: unknown }) {
   return <>{String(value)}</>;
 }
 
+// Settings snapshots (platform fee) carried as metadata.before / after
+const SNAPSHOT_LABEL: Record<string, string> = {
+  standard_rate_bps: 'Standard rate',
+  standard_cap_kobo: 'Standard cap',
+  promo_rate_bps: 'Promotion rate',
+  promo_cap_kobo: 'Promotion cap',
+  promo_starts_at: 'Promotion start',
+  promo_ends_at: 'Promotion end',
+  promo_label: 'Promotion label'
+};
+
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
+
+function snapshotValue(key: string, snap: Record<string, unknown>): string {
+  const value = snap[key];
+  if (value === null || value === undefined || value === '') {
+    // A null cap is "no cap" while its rate is set; a promotion field with
+    // no promotion is "none"
+    if (key === 'standard_cap_kobo') return 'No cap';
+    if (key === 'promo_cap_kobo' && snap.promo_rate_bps != null) {
+      return 'No cap';
+    }
+    return 'None';
+  }
+  if (key.endsWith('_bps') && typeof value === 'number')
+    return formatBps(value);
+  if (key.endsWith('_kobo') && typeof value === 'number') {
+    return formatKobo(value);
+  }
+  if (key.endsWith('_at') && typeof value === 'string') {
+    return formatLagosDateTime(value);
+  }
+  return typeof value === 'object' ? JSON.stringify(value) : String(value);
+}
+
+/** "Standard rate: 3% → 2.5%", one line per field that changed */
+function SnapshotChanges({
+  before,
+  after
+}: {
+  before: Record<string, unknown>;
+  after: Record<string, unknown>;
+}) {
+  const keys = Array.from(
+    new Set([...Object.keys(before), ...Object.keys(after)])
+  )
+    .filter((k) => JSON.stringify(before[k]) !== JSON.stringify(after[k]))
+    .sort((a, b) => {
+      const order = Object.keys(SNAPSHOT_LABEL);
+      const ia = order.indexOf(a);
+      const ib = order.indexOf(b);
+      return (ia === -1 ? order.length : ia) - (ib === -1 ? order.length : ib);
+    });
+  if (!keys.length) {
+    return <span className='text-muted-foreground text-xs'>No change</span>;
+  }
+  return (
+    <ul className='space-y-0.5 text-xs'>
+      {keys.map((k) => (
+        <li key={k}>
+          <span className='text-muted-foreground'>
+            {SNAPSHOT_LABEL[k] ?? humanise(k)}:
+          </span>{' '}
+          {snapshotValue(k, before)} →{' '}
+          <span className='font-medium'>{snapshotValue(k, after)}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** metadata as label/value lines; known keys first, anything else after */
 export function AuditMetadata({
   metadata
 }: {
   metadata: Record<string, unknown> | null;
 }) {
+  const { before, after } = metadata ?? {};
+  const snapshot = isRecord(before) && isRecord(after);
   const known = Object.keys(METADATA_LABEL);
   const entries = Object.entries(metadata ?? {})
     .filter(([key]) => !HIDDEN_METADATA.has(key))
+    .filter(([key]) => !snapshot || (key !== 'before' && key !== 'after'))
     .sort(([a], [b]) => {
       const ia = known.indexOf(a);
       const ib = known.indexOf(b);
       return (ia === -1 ? known.length : ia) - (ib === -1 ? known.length : ib);
     });
-  if (!entries.length) return <span className='text-muted-foreground'>—</span>;
-  return (
+  if (!entries.length && !snapshot) {
+    return <span className='text-muted-foreground'>—</span>;
+  }
+  const list = entries.length ? (
     <dl className='grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-xs'>
       {entries.map(([key, value]) => (
         <div key={key} className='contents'>
@@ -136,6 +213,14 @@ export function AuditMetadata({
         </div>
       ))}
     </dl>
+  ) : null;
+  return snapshot ? (
+    <div className='space-y-1'>
+      <SnapshotChanges before={before} after={after} />
+      {list}
+    </div>
+  ) : (
+    list
   );
 }
 
@@ -204,6 +289,8 @@ export function subjectHref(entry: AuditEntry): string | null {
       return id ? transactionHref(id) : null;
     case 'settlement_sync_issue':
       return '/dashboard/ledger/review-items';
+    case 'platform_fee_settings':
+      return '/dashboard/settings/platform-fees';
     case 'delivery_review':
       // The order page shows its reviews and the delivery actions; the
       // queue is the fallback
@@ -227,9 +314,12 @@ const vendorName = (entry: AuditEntry) =>
  */
 export function auditColumns(opts?: {
   showVendor?: boolean;
+  /** Column ids to leave out, e.g. ['tier', 'what'] */
+  omit?: string[];
 }): ColumnDef<AuditEntry>[] {
   const showVendor = opts?.showVendor ?? true;
-  return [
+  const omit = new Set(opts?.omit ?? []);
+  const columns: ColumnDef<AuditEntry>[] = [
     {
       id: 'created_at',
       header: 'WHEN',
@@ -318,4 +408,5 @@ export function auditColumns(opts?: {
       cell: ({ row }) => <AuditMetadata metadata={row.original.metadata} />
     }
   ];
+  return columns.filter((c) => !c.id || !omit.has(c.id));
 }

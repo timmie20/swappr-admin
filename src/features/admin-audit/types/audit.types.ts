@@ -1,7 +1,7 @@
 // GET /admin/audit, /admin/audit/catalogue and /admin/vendors/:id/history.
 // Contract: swappr-backend plan/vendor-tiers/FRONTEND_HANDOFF.md.
-// Entries are append-only. An admin never receives delivery, payout or
-// ledger entries (the backend leaves them out). Amounts are kobo.
+// Entries are append-only. An admin never receives delivery, payout,
+// ledger or platform entries (the backend leaves them out). Amounts are kobo.
 
 export type AuditCategory =
   | 'vendor'
@@ -9,7 +9,8 @@ export type AuditCategory =
   | 'product'
   | 'delivery'
   | 'payout'
-  | 'ledger';
+  | 'ledger'
+  | 'platform';
 
 export type AuditActorType = 'system' | 'admin' | 'vendor' | 'customer';
 
@@ -21,7 +22,8 @@ export type AuditSubjectType =
   | 'delivery_review'
   | 'payout'
   | 'ledger_transaction'
-  | 'settlement_sync_issue';
+  | 'settlement_sync_issue'
+  | 'platform_fee_settings';
 
 export interface AuditEntry {
   id: string;
@@ -79,7 +81,8 @@ export const CATEGORY_LABEL: Record<AuditCategory, string> = {
   product: 'Product',
   delivery: 'Delivery',
   payout: 'Payout',
-  ledger: 'Ledger'
+  ledger: 'Ledger',
+  platform: 'Platform'
 };
 
 export const ACTOR_LABEL: Record<AuditActorType, string> = {
@@ -133,7 +136,11 @@ export const EVENT_LABEL: Record<string, string> = {
   settlement_recorded: 'Settlement recorded',
   settlement_reversed: 'Settlement reversed',
   settlement_sync_run: 'Settlement sync run',
-  sync_issue_resolved: 'Sync review item resolved'
+  sync_issue_resolved: 'Sync review item resolved',
+  // platform (superadmin)
+  platform_fee_standard_changed: 'Standard fee changed',
+  platform_fee_promotion_set: 'Fee promotion set',
+  platform_fee_promotion_ended: 'Fee promotion ended'
 };
 
 export const OVERRIDE_EVENTS = [

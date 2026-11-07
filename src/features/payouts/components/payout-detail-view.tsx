@@ -19,7 +19,12 @@ import {
 import { Heading } from '@/components/ui/heading';
 import { Modal } from '@/components/ui/modal';
 import { Separator } from '@/components/ui/separator';
-import { formatKobo, formatLagosDateTime, formatNaira } from '@/lib/format';
+import {
+  formatFeeRate,
+  formatKobo,
+  formatLagosDateTime,
+  formatNaira
+} from '@/lib/format';
 import {
   IconAlertTriangle,
   IconArrowLeft,
@@ -334,7 +339,11 @@ export default function PayoutDetailView({ payoutId }: { payoutId: string }) {
               value={formatNaira(payout.gross_amount ?? undefined)}
             />
             <DetailRow
-              label='Platform Fee'
+              label={
+                order
+                  ? `Platform Fee (${formatFeeRate(order.platform_fee_rate_bps)})`
+                  : 'Platform Fee'
+              }
               value={formatNaira(payout.platform_fee ?? undefined)}
             />
             <DetailRow

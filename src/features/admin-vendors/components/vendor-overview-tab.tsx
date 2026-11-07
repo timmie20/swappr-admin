@@ -344,7 +344,7 @@ export function VendorOverviewTab({
                 value={formatKobo(finance.lifetime_sales_kobo)}
               />
               <DetailRow
-                label='Swappr fees (3%)'
+                label='Platform fees'
                 value={formatKobo(finance.platform_fees_kobo)}
               />
               <DetailRow

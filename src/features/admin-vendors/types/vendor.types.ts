@@ -100,7 +100,7 @@ export interface AdminVendorFinance {
   paid_orders: number;
   /** Goods price of paid orders */
   lifetime_sales_kobo: number;
-  /** Swappr's 3% */
+  /** Platform fees: each order at the rate it was charged */
   platform_fees_kobo: number;
   /** Sales − fees */
   vendor_earnings_kobo: number;
@@ -288,6 +288,8 @@ export interface AdminVendorTransaction {
   direction: 'credit' | 'debit';
   gross_kobo: number;
   platform_fee_kobo: number;
+  /** Rate the order was charged (300 = 3%); null for orders paid before it was recorded (those were 3%) */
+  platform_fee_rate_bps: number | null;
   net_kobo: number;
   /** Sale: Paystack PAY-… reference */
   payment_reference: string | null;

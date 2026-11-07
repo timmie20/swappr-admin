@@ -141,6 +141,21 @@ export const navItems: NavItem[] = [
   },
 
   {
+    title: 'Settings',
+    url: '#', // Placeholder as there is no direct link for the parent
+    icon: 'settings',
+    isActive: false,
+    superadminOnly: true,
+    items: [
+      {
+        title: 'Platform fees',
+        url: '/dashboard/settings/platform-fees',
+        shortcut: ['p', 'f']
+      }
+    ]
+  },
+
+  {
     title: 'Account',
     url: '#', // Placeholder as there is no direct link for the parent
     icon: 'billing',

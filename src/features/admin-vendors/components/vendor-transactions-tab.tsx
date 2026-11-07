@@ -15,7 +15,7 @@ import {
 import { DataTable } from '@/components/ui/table/data-table';
 import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
 import { useDataTable } from '@/hooks/use-data-table';
-import { formatKobo, formatLagosDateTime } from '@/lib/format';
+import { formatFeeRate, formatKobo, formatLagosDateTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
 import Link from 'next/link';
@@ -95,6 +95,13 @@ const columns: ColumnDef<AdminVendorTransaction>[] = [
     cell: ({ row }) => (
       <span className='text-muted-foreground tabular-nums'>
         {formatKobo(row.original.platform_fee_kobo)}
+        {/* A rate only for rows tied to an order: a null rate means 3% there,
+            but old swap payouts have no order and no such rate */}
+        {(row.original.type === 'sale' || !!row.original.order_number) && (
+          <span className='ml-1 text-xs'>
+            ({formatFeeRate(row.original.platform_fee_rate_bps)})
+          </span>
+        )}
       </span>
     )
   },
@@ -189,7 +196,7 @@ export function VendorTransactionsTab({ vendorId }: { vendorId: string }) {
             <StatTile
               label='Vendor Earnings'
               value={formatKobo(summary.vendor_earnings_kobo)}
-              sublabel='Sales − Swappr’s 3%'
+              sublabel='Sales − platform fees'
             />
             <StatTile
               label='Paid Out'

@@ -191,6 +191,14 @@ export const queryKeys = {
       [...queryKeys.adminProducts.all(), 'detail', productId] as const
   },
 
+  // Platform fee settings (superadmin)
+  platformFee: {
+    all: () => ['platform-fee'] as const,
+    settings: () => [...queryKeys.platformFee.all(), 'settings'] as const,
+    preview: (amountKobo: number) =>
+      [...queryKeys.platformFee.all(), 'preview', amountKobo] as const
+  },
+
   // Admin customer accounts
   adminCustomers: {
     all: () => ['admin-customers'] as const,

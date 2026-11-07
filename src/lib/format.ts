@@ -127,3 +127,18 @@ export const formatTimestamp = (timestamp?: string) => {
     minute: '2-digit'
   });
 };
+
+/** Basis points → percent: 300 → "3%", 150 → "1.5%" */
+export function formatBps(bps: number): string {
+  return `${(bps / 100).toLocaleString('en-NG', { maximumFractionDigits: 2 })}%`;
+}
+
+/**
+ * The platform fee rate an order was charged. null = paid before the rate
+ * was recorded on the order; those orders were all charged 3%. Only for rows
+ * tied to an order: old swap payouts have no order, so null means nothing
+ * there; show the amount without a rate.
+ */
+export function formatFeeRate(bps: number | null | undefined): string {
+  return formatBps(bps ?? 300);
+}
