@@ -29,7 +29,7 @@ import {
   SidebarRail
 } from '@/components/ui/sidebar';
 import { UserAvatarProfile } from '@/components/user-avatar-profile';
-import { navItems } from '@/constants/data';
+import { getNavItems } from '@/constants/data';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useLogout } from '@/hooks/services/use-auth';
 import type { AdminSession } from '@/types/auth';
@@ -39,25 +39,13 @@ import {
   IconChevronsDown,
   IconCreditCard,
   IconLogout,
-  IconPhotoUp,
   IconUserCircle
 } from '@tabler/icons-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
 import { Icons } from '../icons';
-import { OrgSwitcher } from '../org-switcher';
-export const company = {
-  name: 'Acme Inc',
-  logo: IconPhotoUp,
-  plan: 'Enterprise'
-};
-
-const tenants = [
-  { id: '1', name: 'Acme Inc' },
-  { id: '2', name: 'Beta Corp' },
-  { id: '3', name: 'Gamma Ltd' }
-];
+import { SidebarBrand } from '../sidebar-brand';
 
 export default function AppSidebar({
   session
@@ -68,11 +56,10 @@ export default function AppSidebar({
   const { isOpen } = useMediaQuery();
   const router = useRouter();
   const logout = useLogout();
-  const handleSwitchTenant = (_tenantId: string) => {
-    // Tenant switching functionality would be implemented here
-  };
-
-  const activeTenant = tenants[0];
+  const navItems = React.useMemo(
+    () => getNavItems(session?.role),
+    [session?.role]
+  );
 
   const fullName = session
     ? [session.firstName, session.lastName].filter(Boolean).join(' ') ||
@@ -94,11 +81,7 @@ export default function AppSidebar({
   return (
     <Sidebar collapsible='icon'>
       <SidebarHeader>
-        <OrgSwitcher
-          tenants={tenants}
-          defaultTenant={activeTenant}
-          onTenantSwitch={handleSwitchTenant}
-        />
+        <SidebarBrand />
       </SidebarHeader>
       <SidebarContent className='overflow-x-hidden'>
         <SidebarGroup>

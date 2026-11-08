@@ -21,7 +21,7 @@ export default async function DashboardLayout({
   const defaultOpen = cookieStore.get('sidebar_state')?.value === 'true';
   const session = await getServerSession();
   return (
-    <KBar>
+    <KBar role={session?.role}>
       <SidebarProvider defaultOpen={defaultOpen}>
         <AppSidebar session={session} />
         <SidebarInset>

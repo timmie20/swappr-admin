@@ -11,6 +11,8 @@ export interface NavItem {
   label?: string;
   description?: string;
   isActive?: boolean;
+  /** Finance / delivery-review screens: shown to superadmins only */
+  superadminOnly?: boolean;
   items?: NavItem[];
 }
 

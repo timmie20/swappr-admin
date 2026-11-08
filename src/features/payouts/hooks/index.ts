@@ -1,2 +1,7 @@
-export { usePayouts, usePayout } from './use-payouts';
-export { useRetryPayout } from './use-retry-payout';
+export {
+  usePayouts,
+  usePayout,
+  useApprovePayout,
+  useRejectPayout,
+  useMarkPayoutPaid
+} from './use-payouts';
