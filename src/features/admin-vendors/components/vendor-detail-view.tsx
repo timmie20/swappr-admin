@@ -17,15 +17,28 @@ import {
   useQueryState,
   useQueryStates
 } from 'nuqs';
+import AdminProductListing from '@/features/admin-products/components/admin-product-listing';
 import { useAdminVendor } from '../hooks/use-vendors';
 import { vendorDisplayName } from '../types/vendor.types';
-import { OnboardingStepBadge, VendorStatusBadges } from './vendor-badges';
+import {
+  OnboardingStepBadge,
+  TierBadge,
+  VendorStatusBadges
+} from './vendor-badges';
+import { VendorHistoryTab } from './vendor-history-tab';
 import { VendorOrdersTab } from './vendor-orders-tab';
 import { VendorOverviewTab } from './vendor-overview-tab';
 import { VendorRequestsTab } from './vendor-requests-tab';
 import { VendorTransactionsTab } from './vendor-transactions-tab';
 
-const TABS = ['overview', 'orders', 'requests', 'transactions'] as const;
+const TABS = [
+  'overview',
+  'products',
+  'orders',
+  'requests',
+  'history',
+  'transactions'
+] as const;
 type VendorTab = (typeof TABS)[number];
 
 function TabCount({ count }: { count: number }) {
@@ -54,7 +67,8 @@ export default function VendorDetailView({
   );
   const [, setTabParams] = useQueryStates({
     page: parseAsInteger,
-    search: parseAsString
+    search: parseAsString,
+    sort: parseAsString
   });
   const query = useAdminVendor(vendorId);
   // Transactions is superadmin only; an admin landing on ?tab=transactions
@@ -100,6 +114,7 @@ export default function VendorDetailView({
                 {vendorDisplayName(vendor)}
               </h2>
               <div className='flex flex-wrap items-center gap-1.5'>
+                <TierBadge tier={vendor.tier} />
                 <OnboardingStepBadge step={vendor.onboarding_step} />
                 <VendorStatusBadges vendor={vendor} />
               </div>
@@ -134,12 +149,13 @@ export default function VendorDetailView({
         onValueChange={(value) => {
           // The tab tables share the URL's page/search params: start each
           // tab fresh
-          void setTabParams({ page: null, search: null });
+          void setTabParams({ page: null, search: null, sort: null });
           void setTab(value as VendorTab);
         }}
       >
         <TabsList>
           <TabsTrigger value='overview'>Overview</TabsTrigger>
+          <TabsTrigger value='products'>Products</TabsTrigger>
           <TabsTrigger value='orders'>
             Orders
             <TabCount count={overview?.activity.orders.needs_action ?? 0} />
@@ -148,6 +164,7 @@ export default function VendorDetailView({
             Requests
             <TabCount count={overview?.activity.requests.total_open ?? 0} />
           </TabsTrigger>
+          <TabsTrigger value='history'>History</TabsTrigger>
           {isSuperadmin && (
             <TabsTrigger value='transactions'>Transactions</TabsTrigger>
           )}
@@ -169,6 +186,9 @@ export default function VendorDetailView({
             />
           )}
         </TabsContent>
+        <TabsContent value='products' className='mt-4'>
+          <AdminProductListing vendorId={vendorId} />
+        </TabsContent>
         <TabsContent value='orders' className='mt-4'>
           <VendorOrdersTab
             vendorId={vendorId}
@@ -177,6 +197,9 @@ export default function VendorDetailView({
         </TabsContent>
         <TabsContent value='requests' className='mt-4'>
           <VendorRequestsTab vendorId={vendorId} isSuperadmin={isSuperadmin} />
+        </TabsContent>
+        <TabsContent value='history' className='mt-4'>
+          <VendorHistoryTab vendorId={vendorId} />
         </TabsContent>
         {isSuperadmin && (
           <TabsContent value='transactions' className='mt-4'>

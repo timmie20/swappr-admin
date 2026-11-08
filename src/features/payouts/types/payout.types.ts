@@ -102,6 +102,8 @@ export interface PayoutDetail {
     total_amount: number;
     processing_fee: number | null;
     platform_fee: number | null;
+    /** Rate the order was charged (300 = 3%); null for orders paid before it was recorded (those were 3%) */
+    platform_fee_rate_bps: number | null;
     vendor_payout_amount: number | null;
     delivered_at: string | null;
     delivery_confirmed_by: DeliveryConfirmedBy | null;

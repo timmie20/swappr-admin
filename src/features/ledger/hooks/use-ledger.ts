@@ -66,6 +66,8 @@ function useInvalidateLedger() {
   return () => {
     queryClient.invalidateQueries({ queryKey: queryKeys.ledger.all() });
     queryClient.invalidateQueries({ queryKey: queryKeys.payouts.all() });
+    // These actions are recorded in the audit log
+    queryClient.invalidateQueries({ queryKey: queryKeys.adminAudit.all() });
   };
 }
 

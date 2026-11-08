@@ -169,7 +169,34 @@ export const queryKeys = {
         ...queryKeys.adminVendors.detail(vendorId),
         'transactions',
         params
-      ] as const
+      ] as const,
+    history: (vendorId: string, params?: unknown) =>
+      [...queryKeys.adminVendors.detail(vendorId), 'history', params] as const
+  },
+
+  // Audit log (admin actions + vendor standing)
+  adminAudit: {
+    all: () => ['admin-audit'] as const,
+    list: (params?: unknown) =>
+      [...queryKeys.adminAudit.all(), 'list', params] as const,
+    catalogue: () => [...queryKeys.adminAudit.all(), 'catalogue'] as const
+  },
+
+  // Admin product views (every listing, any state)
+  adminProducts: {
+    all: () => ['admin-products'] as const,
+    list: (params?: unknown) =>
+      [...queryKeys.adminProducts.all(), 'list', params] as const,
+    detail: (productId: string) =>
+      [...queryKeys.adminProducts.all(), 'detail', productId] as const
+  },
+
+  // Platform fee settings (superadmin)
+  platformFee: {
+    all: () => ['platform-fee'] as const,
+    settings: () => [...queryKeys.platformFee.all(), 'settings'] as const,
+    preview: (amountKobo: number) =>
+      [...queryKeys.platformFee.all(), 'preview', amountKobo] as const
   },
 
   // Admin customer accounts

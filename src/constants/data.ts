@@ -1,17 +1,6 @@
 import { isSuperadmin } from '@/lib/auth/roles';
 import { NavItem } from '@/types';
 
-export type Product = {
-  photo_url: string;
-  name: string;
-  description: string;
-  created_at: string;
-  price: number;
-  id: number;
-  category: string;
-  updated_at: string;
-};
-
 //Info: The following data is used for the sidebar navigation and Cmd K bar.
 export const navItems: NavItem[] = [
   {
@@ -31,7 +20,7 @@ export const navItems: NavItem[] = [
     items: [] // No child items
   },
   {
-    title: 'Product',
+    title: 'Products',
     url: '/dashboard/product',
     icon: 'product',
     shortcut: ['p', 'p'],
@@ -95,6 +84,14 @@ export const navItems: NavItem[] = [
     items: [] // No child items
   },
   {
+    title: 'Audit log',
+    url: '/dashboard/audit',
+    icon: 'history',
+    shortcut: ['a', 'l'],
+    isActive: false,
+    items: [] // No child items
+  },
+  {
     title: 'Delivery Reviews',
     url: '/dashboard/delivery-reviews',
     icon: 'delivery',
@@ -139,6 +136,21 @@ export const navItems: NavItem[] = [
         title: 'Transactions',
         url: '/dashboard/ledger/transactions',
         shortcut: ['t', 'x']
+      }
+    ]
+  },
+
+  {
+    title: 'Settings',
+    url: '#', // Placeholder as there is no direct link for the parent
+    icon: 'settings',
+    isActive: false,
+    superadminOnly: true,
+    items: [
+      {
+        title: 'Platform fees',
+        url: '/dashboard/settings/platform-fees',
+        shortcut: ['p', 'f']
       }
     ]
   },

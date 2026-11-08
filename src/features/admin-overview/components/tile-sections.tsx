@@ -123,7 +123,7 @@ export function VendorsSection({
         {
           label: 'Onboarding In Progress',
           value: n(d.onboarding_in_progress),
-          sublabel: 'Before profile complete',
+          sublabel: 'Not yet approved',
           href: '/dashboard/vendors?tab=onboarding'
         },
         {
@@ -215,7 +215,7 @@ export function FinanceSection({
         {
           label: 'Fees Earned Today',
           value: formatKobo(d.platform_fees_today_kobo),
-          sublabel: 'Swappr 3% share'
+          sublabel: 'Platform fees on orders paid today'
         },
         {
           label: 'Owed to Vendors',

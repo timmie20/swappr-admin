@@ -21,8 +21,14 @@ import { formatKobo, formatLagosDateTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useSetVendorInspection } from '../hooks/use-vendors';
-import { AdminVendorOverview, VerificationStatus } from '../types/vendor.types';
+import {
+  AdminVendorOverview,
+  CAC_STATUS_LABEL,
+  CacStatus
+} from '../types/vendor.types';
 import { AMBER_BADGE } from './vendor-badges';
+import { VendorCacLookupCard } from './vendor-cac-lookup-card';
+import { VendorStandingCard } from './vendor-standing-card';
 import { FormTextarea } from '@/components/forms/form-textarea';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
@@ -48,19 +54,21 @@ type RevokeFormValues = z.infer<typeof revokeSchema>;
 export const TILE_GRID =
   '*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs md:grid-cols-2 lg:grid-cols-4';
 
-const STATUS_VARIANT: Record<
-  VerificationStatus,
-  'default' | 'outline' | 'destructive'
-> = {
-  verified: 'default',
-  pending: 'outline',
-  rejected: 'destructive'
-};
+const STATUS_VARIANT: Record<CacStatus, 'default' | 'outline' | 'destructive'> =
+  {
+    verified: 'default',
+    pending: 'outline',
+    rejected: 'destructive',
+    awaiting_confirmation: 'outline'
+  };
 
-function VerificationBadge({ status }: { status: VerificationStatus }) {
+function VerificationBadge({ status }: { status: CacStatus }) {
   return (
-    <Badge variant={STATUS_VARIANT[status]} className='capitalize'>
-      {status}
+    <Badge
+      variant={STATUS_VARIANT[status] ?? 'outline'}
+      className={status === 'awaiting_confirmation' ? AMBER_BADGE : undefined}
+    >
+      {CAC_STATUS_LABEL[status] ?? status}
     </Badge>
   );
 }
@@ -254,7 +262,8 @@ export function VendorOverviewTab({
     {
       label: 'Active Listings',
       value: n(activity.listings.active),
-      sublabel: `${n(activity.listings.out_of_stock)} out of stock · ${n(activity.listings.unpublished)} unpublished`
+      sublabel: `${n(activity.listings.out_of_stock)} out of stock · ${n(activity.listings.unpublished)} unpublished`,
+      href: `${base}?tab=products`
     },
     {
       label: 'Needs Action',
@@ -335,7 +344,7 @@ export function VendorOverviewTab({
                 value={formatKobo(finance.lifetime_sales_kobo)}
               />
               <DetailRow
-                label='Swappr fees (3%)'
+                label='Platform fees'
                 value={formatKobo(finance.platform_fees_kobo)}
               />
               <DetailRow
@@ -524,6 +533,11 @@ export function VendorOverviewTab({
             </CardContent>
           </Card>
 
+          <VendorCacLookupCard
+            vendorId={vendorId}
+            cacStatus={verification?.cac_status}
+          />
+
           <Card>
             <CardHeader>
               <CardTitle>Bank account</CardTitle>
@@ -550,6 +564,7 @@ export function VendorOverviewTab({
             </CardContent>
           </Card>
 
+          <VendorStandingCard vendorId={vendorId} overview={overview} />
           <InspectionCard vendorId={vendorId} vendor={vendor} />
         </div>
       </div>

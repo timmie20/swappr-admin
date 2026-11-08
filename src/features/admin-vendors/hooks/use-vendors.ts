@@ -10,6 +10,7 @@ import { queryKeys } from '@/lib/query-keys';
 import { adminVendorsApi, PageParams } from '../api/vendors.service';
 import {
   QueryAdminVendorsParams,
+  VendorAction,
   VendorOrderQueue,
   VendorTransactionType
 } from '../types/vendor.types';
@@ -104,6 +105,7 @@ export function useSetVendorInspection(vendorId: string) {
       queryClient.invalidateQueries({
         queryKey: queryKeys.adminOverview.all()
       });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminAudit.all() });
       toast.success(
         verified
           ? 'Inspection marked as verified'
@@ -114,6 +116,49 @@ export function useSetVendorInspection(vendorId: string) {
       toast.error(
         getApiError(error, 'Failed to update the inspection').message
       );
+    }
+  });
+}
+
+export function useVendorHistory(
+  vendorId: string,
+  params: PageParams,
+  enabled = true
+) {
+  return useQuery({
+    queryKey: queryKeys.adminVendors.history(vendorId, params),
+    queryFn: () => adminVendorsApi.getHistory(vendorId, params),
+    enabled,
+    placeholderData: keepPreviousData,
+    ...REFRESH
+  });
+}
+
+/**
+ * Audited standing actions. Errors are left to the caller so the dialog can
+ * show the API's message and keep the typed reason.
+ */
+export function useVendorAction(vendorId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      action,
+      reason
+    }: {
+      action: VendorAction;
+      reason: string;
+    }) => adminVendorsApi.runAction(vendorId, action, reason),
+    onSuccess: (data) => {
+      // Tier, badges, list filters and the Overview tiles can all change
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.adminVendors.all()
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.adminOverview.all()
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminAudit.all() });
+      toast.success(data.message);
     }
   });
 }
