@@ -5,9 +5,11 @@ import {
   setAuthCookies
 } from './lib/auth/cookies';
 import { attemptRefresh } from './lib/auth/refresh';
+import { getClientIp } from './lib/api/backend-headers';
+import { TOO_MANY_REQUESTS_PATH } from './lib/api/rate-limit';
 
 // Routes that don't require authentication
-const PUBLIC_ROUTES = ['/auth/sign-in'];
+const PUBLIC_ROUTES = ['/auth/sign-in', TOO_MANY_REQUESTS_PATH];
 
 // Routes that authenticated admins shouldn't access (redirect to dashboard)
 const AUTH_ROUTES = ['/auth/sign-in'];
@@ -38,9 +40,27 @@ export async function handleTokenRefresh(
   refreshToken: string,
   request: NextRequest
 ): Promise<NextResponse> {
-  const newTokens = await attemptRefresh(refreshToken);
+  const result = await attemptRefresh(
+    refreshToken,
+    getClientIp(request.headers)
+  );
 
-  if (!newTokens) {
+  // A 429 is temporary and the refresh token wasn't redeemed, so keep the
+  // cookies. If the access token still works (we refresh a minute early),
+  // let the page load; otherwise show the wait page instead of signing out.
+  if (result.status === 'rate_limited') {
+    const { accessToken, expiresAt } = getTokensFromRequest(request);
+    if (accessToken && !isExpired(expiresAt, 0)) {
+      return NextResponse.next();
+    }
+    const url = new URL(TOO_MANY_REQUESTS_PATH, request.url);
+    if (result.retryAfterSeconds !== null) {
+      url.searchParams.set('retry_after', String(result.retryAfterSeconds));
+    }
+    return NextResponse.rewrite(url);
+  }
+
+  if (result.status === 'failed') {
     const response = NextResponse.redirect(
       new URL('/auth/sign-in', request.url)
     );
@@ -49,7 +69,7 @@ export async function handleTokenRefresh(
   }
 
   const response = NextResponse.next();
-  setAuthCookies(response.cookies, newTokens);
+  setAuthCookies(response.cookies, result.tokens);
   return response;
 }
 

@@ -13,14 +13,26 @@ type RetriableRequestConfig = InternalAxiosRequestConfig & {
 // middleware uses, then retries once. Single-flighted here too so concurrent
 // queries share one refresh call instead of each racing their own against
 // the one-time-use refresh token.
-let refreshPromise: Promise<boolean> | null = null;
+// "rate_limited" carries the 429 so the caller can surface its message: the
+// session is still fine, it just can't be refreshed for a moment.
+type RefreshOutcome =
+  | { status: 'ok' }
+  | { status: 'rate_limited'; error: AxiosError }
+  | { status: 'failed' };
 
-function refreshSession(): Promise<boolean> {
+let refreshPromise: Promise<RefreshOutcome> | null = null;
+
+function refreshSession(): Promise<RefreshOutcome> {
   if (!refreshPromise) {
     refreshPromise = axios
       .post('/api/auth/refresh', null, { withCredentials: true })
-      .then(() => true)
-      .catch(() => false)
+      .then((): RefreshOutcome => ({ status: 'ok' }))
+      .catch(
+        (error: unknown): RefreshOutcome =>
+          axios.isAxiosError(error) && error.response?.status === 429
+            ? { status: 'rate_limited', error }
+            : { status: 'failed' }
+      )
       .finally(() => {
         refreshPromise = null;
       });
@@ -50,10 +62,17 @@ apiClient.interceptors.response.use(
       originalRequest._retried = true;
 
       const refreshed = await refreshSession();
-      if (refreshed) {
+      if (refreshed.status === 'ok') {
         return apiClient(originalRequest);
       }
 
+      if (refreshed.status === 'rate_limited') {
+        // Not a sign-out: reject with the 429 so the UI shows its message.
+        // retryUnlessClientError never retries a 4xx.
+        return Promise.reject(refreshed.error);
+      }
+
+      // Refresh token is dead too — no client-side recovery possible
       if (typeof window !== 'undefined') {
         window.location.replace('/auth/sign-in');
       }

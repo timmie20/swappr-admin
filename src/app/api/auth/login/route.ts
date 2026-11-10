@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { signInSchema } from '@/schemas/auth';
 import { setAuthCookies } from '@/lib/auth/cookies';
+import { backendHeaders } from '@/lib/api/backend-headers';
+import { rateLimitedJson, readRateLimit } from '@/lib/api/rate-limit';
 import { AuthTokens } from '@/types/auth';
 
 export async function POST(request: Request) {
-  const body = await request.json();
+  const body = await request.json().catch(() => null);
 
   const parsed = signInSchema.safeParse(body);
   if (!parsed.success) {
@@ -21,18 +23,50 @@ export async function POST(request: Request) {
   try {
     const res = await fetch(`${process.env.API_BASE_URL}/auth/admin/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...backendHeaders(request.headers)
+      },
       body: JSON.stringify({
         email: parsed.data.email,
-        password: parsed.data.password
+        password: parsed.data.password,
+        // The backend verifies it; we only pass it through
+        ...(parsed.data.turnstile_token
+          ? { turnstile_token: parsed.data.turnstile_token }
+          : {})
       })
     });
 
-    const data = await res.json();
+    if (res.status === 429) {
+      const { body, init } = rateLimitedJson(await readRateLimit(res));
+      return NextResponse.json(body, init);
+    }
+
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
+      // A missing or mismatched BFF_SHARED_SECRET, not a bad password
+      if (data.code === 'BFF_ONLY') {
+        console.error(
+          'Backend refused admin login with BFF_ONLY: check BFF_SHARED_SECRET'
+        );
+        return NextResponse.json(
+          {
+            code: 'BFF_ONLY',
+            message: 'Sign-in is unavailable right now. Please try again later.'
+          },
+          { status: 503 }
+        );
+      }
+
+      const message = Array.isArray(data.message)
+        ? data.message.join('. ')
+        : data.message;
       return NextResponse.json(
-        { message: data.message || 'Invalid email or password' },
+        {
+          ...(typeof data.code === 'string' ? { code: data.code } : {}),
+          message: message || 'Invalid email or password'
+        },
         { status: res.status }
       );
     }

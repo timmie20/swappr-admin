@@ -1,8 +1,9 @@
 // ⚠️ Server only — never import in a Client Component
 
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { COOKIE_NAMES } from '../auth/cookies';
+import { backendHeaders } from './backend-headers';
 
 const BASE_URL = process.env.API_BASE_URL!;
 
@@ -36,7 +37,8 @@ export async function serverFetch<T>(
     method,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`
+      Authorization: `Bearer ${accessToken}`,
+      ...backendHeaders(await headers())
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
     next: { revalidate, ...(tags ? { tags } : {}) }

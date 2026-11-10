@@ -9,5 +9,8 @@ export const signInSchema = z.object({
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
       'Password must contain at least one uppercase letter, one lowercase letter, and one number'
-    )
+    ),
+  // Cloudflare Turnstile token, single use. Optional: absent when no site key
+  // is configured (local dev). The backend decides whether it's required.
+  turnstile_token: z.string().max(2048).optional()
 });
