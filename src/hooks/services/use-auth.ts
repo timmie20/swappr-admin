@@ -17,6 +17,16 @@ export function useLogin() {
       queryClient.clear();
     },
     onError: (error: any) => {
+      // The sign-in form shows these inline (wait time, security check)
+      const status = error?.response?.status;
+      const code = error?.response?.data?.code;
+      if (
+        status === 429 ||
+        code === 'CAPTCHA_REQUIRED' ||
+        code === 'CAPTCHA_FAILED'
+      ) {
+        return;
+      }
       const message = error?.response?.data?.message || 'Failed to sign in';
       toast.error(message);
     }
