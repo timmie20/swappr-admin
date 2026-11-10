@@ -16,6 +16,7 @@ export interface AdminSession {
 export type LoginCredentials = {
   email: string;
   password: string;
+  turnstile_token?: string;
 };
 
 /** Full admin record from /admins/me */
