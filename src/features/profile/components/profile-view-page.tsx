@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getServerSession } from '@/lib/auth/session';
+import { TwoStepCard } from './two-step-card';
 
 export default async function ProfileViewPage() {
   const session = await getServerSession();
@@ -13,7 +14,7 @@ export default async function ProfileViewPage() {
     session.email;
 
   return (
-    <div className='flex w-full flex-col p-4'>
+    <div className='flex w-full flex-col gap-4 p-4'>
       <Card className='max-w-lg'>
         <CardHeader>
           <CardTitle className='text-left text-2xl font-bold'>
@@ -36,6 +37,7 @@ export default async function ProfileViewPage() {
           </div>
         </CardContent>
       </Card>
+      <TwoStepCard email={session.email} />
     </div>
   );
 }

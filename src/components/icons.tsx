@@ -42,7 +42,8 @@ import {
   IconBook,
   IconBuildingStore,
   IconUsers,
-  IconHistory
+  IconHistory,
+  IconShieldLock
 } from '@tabler/icons-react';
 
 export type Icon = React.ComponentType<IconProps>;
@@ -90,5 +91,6 @@ export const Icons = {
   ledger: IconBook,
   store: IconBuildingStore,
   users: IconUsers,
-  history: IconHistory
+  history: IconHistory,
+  admins: IconShieldLock
 };
