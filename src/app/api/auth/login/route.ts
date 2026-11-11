@@ -2,9 +2,15 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { signInSchema } from '@/schemas/auth';
 import { setAuthCookies } from '@/lib/auth/cookies';
+import { clearMfaTicket, setMfaTicket } from '@/lib/auth/mfa-ticket';
 import { backendHeaders } from '@/lib/api/backend-headers';
-import { rateLimitedJson, readRateLimit } from '@/lib/api/rate-limit';
-import { AuthTokens } from '@/types/auth';
+import {
+  backendErrorResponse,
+  invalidAuthServerResponse,
+  parseAuthTokens,
+  readBody
+} from '@/lib/api/backend-errors';
+import type { SignInStep } from '@/types/auth';
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -37,57 +43,38 @@ export async function POST(request: Request) {
       })
     });
 
-    if (res.status === 429) {
-      const { body, init } = rateLimitedJson(await readRateLimit(res));
-      return NextResponse.json(body, init);
-    }
-
-    const data = await res.json().catch(() => ({}));
+    const data = await readBody(res);
 
     if (!res.ok) {
-      // A missing or mismatched BFF_SHARED_SECRET, not a bad password
-      if (data.code === 'BFF_ONLY') {
-        console.error(
-          'Backend refused admin login with BFF_ONLY: check BFF_SHARED_SECRET'
-        );
-        return NextResponse.json(
-          {
-            code: 'BFF_ONLY',
-            message: 'Sign-in is unavailable right now. Please try again later.'
-          },
-          { status: 503 }
-        );
-      }
-
-      const message = Array.isArray(data.message)
-        ? data.message.join('. ')
-        : data.message;
-      return NextResponse.json(
-        {
-          ...(typeof data.code === 'string' ? { code: data.code } : {}),
-          message: message || 'Invalid email or password'
-        },
-        { status: res.status }
-      );
-    }
-
-    const tokens: AuthTokens = {
-      access_token: data.access_token,
-      refresh_token: data.refresh_token,
-      expires_at: new Date(data.expires_at).getTime()
-    };
-
-    if (!tokens.access_token || !tokens.refresh_token || !tokens.expires_at) {
-      return NextResponse.json(
-        { message: 'Invalid response from auth server' },
-        { status: 500 }
-      );
+      return backendErrorResponse(res, data, 'Invalid email or password');
     }
 
     const cookieStore = await cookies();
-    setAuthCookies(cookieStore, tokens);
 
-    return NextResponse.json({ message: 'Login successful' }, { status: 200 });
+    // Two-step sign-in: the password was right, and the session comes from
+    // /api/auth/mfa/* once the code checks out. The ticket stays server-side.
+    if (data.mfa_required === true || data.mfa_setup_required === true) {
+      if (typeof data.mfa_ticket !== 'string' || !data.mfa_ticket) {
+        return invalidAuthServerResponse();
+      }
+      setMfaTicket(cookieStore, data.mfa_ticket, data.expires_at);
+      const step: SignInStep = data.mfa_required ? 'verify' : 'setup';
+      return NextResponse.json({ step }, { status: 200 });
+    }
+
+    // A backend without MFA still returns the session here. Remove this
+    // branch once the MFA backend is live everywhere.
+    const tokens = parseAuthTokens(data);
+    if (!tokens) return invalidAuthServerResponse();
+
+    setAuthCookies(cookieStore, tokens);
+    clearMfaTicket(cookieStore);
+
+    const step: SignInStep = 'done';
+    return NextResponse.json(
+      { step, message: 'Login successful' },
+      { status: 200 }
+    );
   } catch {
     return NextResponse.json(
       { message: 'An error occurred during login' },

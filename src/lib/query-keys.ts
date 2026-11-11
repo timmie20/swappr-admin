@@ -191,6 +191,18 @@ export const queryKeys = {
       [...queryKeys.adminProducts.all(), 'detail', productId] as const
   },
 
+  // Two-step sign-in (the signed-in admin's own status)
+  mfa: {
+    all: () => ['mfa'] as const,
+    status: () => [...queryKeys.mfa.all(), 'status'] as const
+  },
+
+  // Admin accounts (superadmin)
+  admins: {
+    all: () => ['admins'] as const,
+    list: () => [...queryKeys.admins.all(), 'list'] as const
+  },
+
   // Platform fee settings (superadmin)
   platformFee: {
     all: () => ['platform-fee'] as const,
