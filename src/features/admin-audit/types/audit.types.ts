@@ -1,7 +1,7 @@
 // GET /admin/audit, /admin/audit/catalogue and /admin/vendors/:id/history.
 // Contract: swappr-backend plan/vendor-tiers/FRONTEND_HANDOFF.md.
 // Entries are append-only. An admin never receives delivery, payout,
-// ledger or platform entries (the backend leaves them out). Amounts are kobo.
+// ledger, platform or admin_security entries (the backend leaves them out). Amounts are kobo.
 
 export type AuditCategory =
   | 'vendor'
@@ -10,7 +10,8 @@ export type AuditCategory =
   | 'delivery'
   | 'payout'
   | 'ledger'
-  | 'platform';
+  | 'platform'
+  | 'admin_security';
 
 export type AuditActorType = 'system' | 'admin' | 'vendor' | 'customer';
 
@@ -23,7 +24,8 @@ export type AuditSubjectType =
   | 'payout'
   | 'ledger_transaction'
   | 'settlement_sync_issue'
-  | 'platform_fee_settings';
+  | 'platform_fee_settings'
+  | 'admin';
 
 export interface AuditEntry {
   id: string;
@@ -82,7 +84,8 @@ export const CATEGORY_LABEL: Record<AuditCategory, string> = {
   delivery: 'Delivery',
   payout: 'Payout',
   ledger: 'Ledger',
-  platform: 'Platform'
+  platform: 'Platform',
+  admin_security: 'Admin security'
 };
 
 export const ACTOR_LABEL: Record<AuditActorType, string> = {
@@ -140,7 +143,12 @@ export const EVENT_LABEL: Record<string, string> = {
   // platform (superadmin)
   platform_fee_standard_changed: 'Standard fee changed',
   platform_fee_promotion_set: 'Fee promotion set',
-  platform_fee_promotion_ended: 'Fee promotion ended'
+  platform_fee_promotion_ended: 'Fee promotion ended',
+  // admin security (superadmin)
+  admin_mfa_enabled: 'Turned on two-step sign-in',
+  admin_mfa_reset: 'Two-step sign-in reset',
+  admin_mfa_recovery_code_used: 'Signed in with a recovery code',
+  admin_mfa_recovery_codes_regenerated: 'Made new recovery codes'
 };
 
 export const OVERRIDE_EVENTS = [

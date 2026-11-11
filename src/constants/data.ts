@@ -92,6 +92,15 @@ export const navItems: NavItem[] = [
     items: [] // No child items
   },
   {
+    title: 'Admins',
+    url: '/dashboard/admins',
+    icon: 'admins',
+    shortcut: ['a', 'd'],
+    isActive: false,
+    superadminOnly: true,
+    items: [] // No child items
+  },
+  {
     title: 'Delivery Reviews',
     url: '/dashboard/delivery-reviews',
     icon: 'delivery',

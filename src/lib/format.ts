@@ -86,6 +86,21 @@ export function formatLagosDateTime(
   }).format(date);
 }
 
+/** ISO 8601 UTC timestamp → the date in Nigeria time, e.g. "11 Nov 2026". */
+export function formatLagosDate(
+  timestamp: string | Date | null | undefined
+): string {
+  if (!timestamp) return '—';
+  const date = new Date(timestamp);
+  if (isNaN(date.getTime())) return '—';
+  return new Intl.DateTimeFormat('en-NG', {
+    timeZone: LAGOS_TIME_ZONE,
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  }).format(date);
+}
+
 /** ISO 8601 UTC timestamp → today's date in Nigeria time, as YYYY-MM-DD. */
 export function lagosDateKey(timestamp: string | Date = new Date()): string {
   // en-CA formats as YYYY-MM-DD

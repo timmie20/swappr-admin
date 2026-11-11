@@ -291,6 +291,8 @@ export function subjectHref(entry: AuditEntry): string | null {
       return '/dashboard/ledger/review-items';
     case 'platform_fee_settings':
       return '/dashboard/settings/platform-fees';
+    case 'admin':
+      return '/dashboard/admins';
     case 'delivery_review':
       // The order page shows its reviews and the delivery actions; the
       // queue is the fallback
