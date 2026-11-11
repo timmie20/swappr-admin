@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Icons } from '@/components/icons';
 import { useMfaVerify } from '@/hooks/services/use-auth';
 import { useRetryCountdown } from '@/hooks/use-retry-countdown';
 import { formatRetryAfter } from '@/lib/api/rate-limit';
-import { mfaCodeSchema, mfaVerifySchema } from '@/schemas/auth';
+import { mfaVerifySchema } from '@/schemas/auth';
 import { attemptsLeftText, classifyMfaError } from '../utils/mfa-errors';
+import { CodeInput } from './code-input';
 
 /** Sign-in's second step: a 6-digit code, or a recovery code. */
 export function VerifyStep({
@@ -34,12 +34,10 @@ export function VerifyStep({
     setHint(null);
   }
 
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const body = useRecovery ? { recovery_code: value } : { code: value };
-    const parsed = useRecovery
-      ? mfaVerifySchema.safeParse(body)
-      : mfaCodeSchema.safeParse(body);
+  function submit(input: string) {
+    if (verify.isPending || countdown.isLocked) return;
+    const body = useRecovery ? { recovery_code: input } : { code: input };
+    const parsed = mfaVerifySchema.safeParse(body);
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? 'Check the code');
       return;
@@ -72,55 +70,51 @@ export function VerifyStep({
   }
 
   const { isLocked, secondsLeft } = countdown;
+  const ready = useRecovery ? !!value.trim() : value.length === 6;
 
   return (
-    <form onSubmit={onSubmit} className='w-full space-y-6' noValidate>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit(value);
+      }}
+      className='flex w-full flex-col items-center space-y-6 text-center'
+      noValidate
+    >
       <div className='space-y-1'>
         <h1 className='text-2xl font-semibold tracking-tight'>
-          Two-step sign-in
+          {useRecovery ? 'Enter a recovery code' : 'Enter the 6-digit code'}
         </h1>
         <p className='text-muted-foreground text-sm'>
           {useRecovery
-            ? 'Enter one of the recovery codes you saved when you set up two-step sign-in. Each code works once.'
-            : 'Enter the 6-digit code from your authenticator app.'}
+            ? 'One of the codes you saved when you set up two-step sign-in. Each works once.'
+            : 'From your authenticator app.'}
         </p>
       </div>
 
-      <div className='space-y-2'>
-        <Label htmlFor='mfa-code'>
-          {useRecovery ? 'Recovery code' : 'Code'}
-        </Label>
-        {useRecovery ? (
-          <Input
-            id='mfa-code'
-            key='recovery'
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder='xxxxx-xxxxx'
-            autoComplete='off'
-            autoCapitalize='none'
-            spellCheck={false}
-            maxLength={32}
-            autoFocus
-            className='font-mono tracking-wider'
-            aria-invalid={!!error}
-          />
-        ) : (
-          <Input
-            id='mfa-code'
-            key='code'
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder='123 456'
-            inputMode='numeric'
-            autoComplete='one-time-code'
-            maxLength={16}
-            autoFocus
-            className='font-mono text-lg tracking-[0.3em]'
-            aria-invalid={!!error}
-          />
-        )}
-      </div>
+      {useRecovery ? (
+        <Input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder='xxxxx-xxxxx'
+          aria-label='Recovery code'
+          autoComplete='off'
+          autoCapitalize='none'
+          spellCheck={false}
+          maxLength={32}
+          autoFocus
+          className='text-center font-mono tracking-wider'
+          aria-invalid={!!error}
+        />
+      ) : (
+        <CodeInput
+          value={value}
+          onChange={setValue}
+          onComplete={submit}
+          disabled={verify.isPending}
+          invalid={!!error}
+        />
+      )}
 
       {error && (
         <div role='alert' className='text-destructive space-y-1 text-sm'>
@@ -135,7 +129,7 @@ export function VerifyStep({
       <Button
         type='submit'
         className='w-full'
-        disabled={verify.isPending || isLocked || !value.trim()}
+        disabled={verify.isPending || isLocked || !ready}
       >
         {verify.isPending && (
           <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />

@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Modal } from '@/components/ui/modal';
 import { Icons } from '@/components/icons';
+import { CodeInput } from '@/features/auth/components/code-input';
 import { RecoveryCodesPanel } from '@/features/auth/components/recovery-codes-panel';
 import { useRetryCountdown } from '@/hooks/use-retry-countdown';
 import { getApiError } from '@/lib/api/errors';
@@ -30,15 +29,15 @@ export function RegenerateCodesDialog({
   const [error, setError] = useState<string | null>(null);
   const [codes, setCodes] = useState<string[] | null>(null);
 
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const parsed = mfaCodeSchema.safeParse({ code });
+  function submit(value: string) {
+    if (regenerate.isPending || countdown.isLocked) return;
+    const parsed = mfaCodeSchema.safeParse({ code: value });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? 'Check the code');
       return;
     }
     setError(null);
-    regenerate.mutate(code, {
+    regenerate.mutate(value, {
       onSuccess: (result) => setCodes(result.recovery_codes),
       onError: (err) => {
         const {
@@ -79,22 +78,21 @@ export function RegenerateCodesDialog({
           continueLabel='Done'
         />
       ) : (
-        <form onSubmit={onSubmit} className='space-y-4' noValidate>
-          <div className='space-y-2'>
-            <Label htmlFor='regenerate-code'>Code</Label>
-            <Input
-              id='regenerate-code'
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder='123 456'
-              inputMode='numeric'
-              autoComplete='one-time-code'
-              maxLength={16}
-              autoFocus
-              className='font-mono text-lg tracking-[0.3em]'
-              aria-invalid={!!error}
-            />
-          </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            submit(code);
+          }}
+          className='space-y-4'
+          noValidate
+        >
+          <CodeInput
+            value={code}
+            onChange={setCode}
+            onComplete={submit}
+            disabled={regenerate.isPending}
+            invalid={!!error}
+          />
           {error && (
             <p role='alert' className='text-destructive text-sm'>
               {error}

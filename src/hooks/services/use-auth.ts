@@ -26,10 +26,6 @@ export function useLogin() {
   });
 }
 
-export function useMfaSetup() {
-  return useMutation({ mutationFn: () => authEndpoints.mfaSetup() });
-}
-
 export function useMfaConfirm() {
   return useMutation({
     mutationFn: (code: string) => authEndpoints.mfaConfirm(code)
