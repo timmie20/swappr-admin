@@ -39,6 +39,10 @@ const n = (value: number) => value.toLocaleString('en-NG');
 
 const REVOKE_REASON_MAX = 500;
 
+// The API needs a reason with every revoke, but for a request that was never
+// accepted it is discarded, so the admin isn't asked for one
+const DECLINE_REASON = 'Pending inspection request declined';
+
 // Same rule as the API (5–500 characters after trimming)
 const revokeSchema = z.object({
   reason: z
@@ -107,9 +111,17 @@ function InspectionCard({
     setInspection.mutate({ verified: true }, { onSuccess: closeDialog });
   };
 
+  const onDecline = (event: React.FormEvent) => {
+    event.preventDefault();
+    setInspection.mutate(
+      { verified: false, reason: DECLINE_REASON, declined: true },
+      { onSuccess: closeDialog }
+    );
+  };
+
   const onRevoke = ({ reason }: RevokeFormValues) => {
     setInspection.mutate(
-      { verified: false, reason, declined: confirming === 'decline' },
+      { verified: false, reason },
       { onSuccess: closeDialog }
     );
   };
@@ -136,31 +148,24 @@ function InspectionCard({
       >
         <Form
           form={form}
-          // Verifying has no reason, so it must skip the revoke validation
+          // Verifying and declining have no reason, so they skip the revoke
+          // validation
           onSubmit={
-            confirming === 'verify' ? onVerify : form.handleSubmit(onRevoke)
+            confirming === 'verify'
+              ? onVerify
+              : confirming === 'decline'
+                ? onDecline
+                : form.handleSubmit(onRevoke)
           }
           className='space-y-2'
         >
-          {(confirming === 'revoke' || confirming === 'decline') && (
+          {confirming === 'revoke' && (
             <FormTextarea
               control={form.control}
               name='reason'
-              label={
-                confirming === 'decline'
-                  ? 'Reason for declining'
-                  : 'Reason for revocation'
-              }
-              description={
-                confirming === 'decline'
-                  ? 'Required. Not sent to the vendor.'
-                  : 'Tell the vendor why. They’ll see this in their email.'
-              }
-              placeholder={
-                confirming === 'decline'
-                  ? 'e.g. Store is outside our inspection area'
-                  : 'e.g. Store inspection was not satisfactory, vendor must reapply'
-              }
+              label='Reason for revocation'
+              description='Tell the vendor why. They’ll see this in their email.'
+              placeholder='e.g. Store inspection was not satisfactory, vendor must reapply'
               required
               disabled={setInspection.isPending}
               config={{ maxLength: REVOKE_REASON_MAX, rows: 4 }}
@@ -180,7 +185,7 @@ function InspectionCard({
               variant={confirming === 'verify' ? 'default' : 'destructive'}
               disabled={
                 setInspection.isPending ||
-                (confirming !== 'verify' && !form.formState.isValid)
+                (confirming === 'revoke' && !form.formState.isValid)
               }
               type='submit'
             >
