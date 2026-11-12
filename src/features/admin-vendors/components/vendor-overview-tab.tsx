@@ -81,9 +81,9 @@ function InspectionCard({
   vendor: AdminVendorOverview['vendor'];
 }) {
   const setInspection = useSetVendorInspection(vendorId);
-  const [confirming, setConfirming] = useState<'verify' | 'revoke' | null>(
-    null
-  );
+  const [confirming, setConfirming] = useState<
+    'verify' | 'revoke' | 'decline' | null
+  >(null);
   const pending =
     !vendor.is_inspection_verified && !!vendor.inspection_requested_at;
 
@@ -109,7 +109,7 @@ function InspectionCard({
 
   const onRevoke = ({ reason }: RevokeFormValues) => {
     setInspection.mutate(
-      { verified: false, reason },
+      { verified: false, reason, declined: confirming === 'decline' },
       { onSuccess: closeDialog }
     );
   };
@@ -122,12 +122,16 @@ function InspectionCard({
         title={
           confirming === 'verify'
             ? 'Mark the store inspection verified?'
-            : 'Revoke the store inspection?'
+            : confirming === 'decline'
+              ? 'Decline the inspection request?'
+              : 'Revoke the store inspection?'
         }
         description={
           confirming === 'verify'
             ? 'Only do this after a Swappr team member has inspected the store in person. The vendor shows as Swappr Inspected, can turn on store pickup, and is emailed.'
-            : 'The vendor loses the Swappr Inspected badge, store pickup is turned off, and their inspection request is cleared, they would have to request a new one.'
+            : confirming === 'decline'
+              ? 'The request is cleared and the vendor can send a new one. They aren’t emailed about a declined request.'
+              : 'The vendor loses the Swappr Inspected badge, store pickup is turned off, and their inspection request is cleared, they would have to request a new one.'
         }
       >
         <Form
@@ -138,13 +142,25 @@ function InspectionCard({
           }
           className='space-y-2'
         >
-          {confirming === 'revoke' && (
+          {(confirming === 'revoke' || confirming === 'decline') && (
             <FormTextarea
               control={form.control}
               name='reason'
-              label='Reason for revocation'
-              description='Tell the vendor why. They’ll see this in their email.'
-              placeholder='e.g. Store inspection was not satisfactory, vendor must reapply'
+              label={
+                confirming === 'decline'
+                  ? 'Reason for declining'
+                  : 'Reason for revocation'
+              }
+              description={
+                confirming === 'decline'
+                  ? 'Required. Not sent to the vendor.'
+                  : 'Tell the vendor why. They’ll see this in their email.'
+              }
+              placeholder={
+                confirming === 'decline'
+                  ? 'e.g. Store is outside our inspection area'
+                  : 'e.g. Store inspection was not satisfactory, vendor must reapply'
+              }
               required
               disabled={setInspection.isPending}
               config={{ maxLength: REVOKE_REASON_MAX, rows: 4 }}
@@ -161,17 +177,21 @@ function InspectionCard({
               Cancel
             </Button>
             <Button
-              variant={confirming === 'revoke' ? 'destructive' : 'default'}
+              variant={confirming === 'verify' ? 'default' : 'destructive'}
               disabled={
                 setInspection.isPending ||
-                (confirming === 'revoke' && !form.formState.isValid)
+                (confirming !== 'verify' && !form.formState.isValid)
               }
               type='submit'
             >
               {setInspection.isPending && (
                 <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />
               )}
-              {confirming === 'verify' ? 'Mark verified' : 'Revoke inspection'}
+              {confirming === 'verify'
+                ? 'Mark verified'
+                : confirming === 'decline'
+                  ? 'Decline request'
+                  : 'Revoke inspection'}
             </Button>
           </div>
         </Form>
@@ -212,9 +232,18 @@ function InspectionCard({
         {(pending || vendor.is_inspection_verified) && (
           <div className='flex gap-2'>
             {pending && (
-              <Button size='sm' onClick={() => setConfirming('verify')}>
-                Mark inspection verified
-              </Button>
+              <>
+                <Button size='sm' onClick={() => setConfirming('verify')}>
+                  Mark inspection verified
+                </Button>
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={() => setConfirming('decline')}
+                >
+                  Decline request
+                </Button>
+              </>
             )}
             {vendor.is_inspection_verified && (
               <Button
