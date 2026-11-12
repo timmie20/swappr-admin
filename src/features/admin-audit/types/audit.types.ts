@@ -114,6 +114,7 @@ export const EVENT_LABEL: Record<string, string> = {
   inspection_verified: 'Inspection verified',
   inspection_revoked: 'Inspection revoked',
   inspection_requested: 'Inspection requested',
+  inspection_request_declined: 'Inspection request declined',
   vendor_archived: 'Vendor archived',
   vendor_profile_edited: 'Vendor profile edited',
   // application

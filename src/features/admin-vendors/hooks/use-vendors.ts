@@ -97,8 +97,10 @@ export function useSetVendorInspection(vendorId: string) {
     }: {
       verified: boolean;
       reason?: string;
+      /** Only changes the toast: a declined request was never accepted */
+      declined?: boolean;
     }) => adminVendorsApi.setInspection(vendorId, verified, reason),
-    onSuccess: (_data, { verified }) => {
+    onSuccess: (_data, { verified, declined }) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.adminVendors.all()
       });
@@ -109,7 +111,9 @@ export function useSetVendorInspection(vendorId: string) {
       toast.success(
         verified
           ? 'Inspection marked as verified'
-          : 'Inspection revoked — pickup is now off'
+          : declined
+            ? 'Inspection request declined'
+            : 'Inspection revoked — pickup is now off'
       );
     },
     onError: (error) => {
